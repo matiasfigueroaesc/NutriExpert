@@ -2,10 +2,11 @@ package cl.duoc.nutriexpert.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
-
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Paleta tomada del mockup de NutriExpert
+val VerdePrimario = Color(0xFF2E6B34)   // botones, logo y elementos principales
+val FondoClaro = Color(0xFFF4F7F1)      // fondo de las pantallas
+val TextoOscuro = Color(0xFF18261A)     // texto sobre fondo claro
+val VerdeSuave = Color(0xFFDCEFD6)      // tarjetas, chips y contenedores
+val Blanco = Color(0xFFFFFFFF)          // texto sobre el verde primario
+val Borde = Color(0xFFDCE4D8)           // bordes de campos y tarjetas
+val AzulEnlace = Color(0xFF1F5F99)      // enlaces como "¿Olvidaste tu contraseña?"

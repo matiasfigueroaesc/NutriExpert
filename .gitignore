@@ -16,3 +16,6 @@ local.properties
 
 # Mockups de referencia (no van al repo)
 *.zip
+
+# Configuración local de Android Studio
+.idea/
