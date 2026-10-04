@@ -5,8 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.rememberNavController
+import cl.duoc.nutriexpert.navigation.AppNavigation
 import cl.duoc.nutriexpert.ui.theme.NutriExpertTheme
-import cl.duoc.nutriexpert.ui.views.LoginScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -14,8 +14,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NutriExpertTheme {
-                // Temporal: en la parte 1c esto se reemplaza por AppNavigation
-                LoginScreen(navController = rememberNavController())
+                val navController = rememberNavController()
+                AppNavigation(navController)
             }
         }
     }

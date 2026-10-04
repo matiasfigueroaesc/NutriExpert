@@ -118,7 +118,7 @@ fun LoginScreen(navController: NavHostController) {
         }
 
         TextButton(
-            onClick = { /* Se conecta a "recuperar" en la parte 1c */ },
+            onClick = { navController.navigate("recuperar") },
             modifier = Modifier.align(Alignment.End)
         ) {
             Text("¿Olvidaste tu contraseña?", color = MaterialTheme.colorScheme.secondary)
@@ -137,6 +137,12 @@ fun LoginScreen(navController: NavHostController) {
                 }
                 // Si mensajeError quedó vacío, los datos son válidos.
                 // El ingreso real (verificar el usuario) llega con Room.
+                if (mensajeError.isEmpty()) {
+                    navController.navigate("predios") {
+                        // Saca el Login de la pila: con "atrás" no se vuelve al Login
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -148,7 +154,7 @@ fun LoginScreen(navController: NavHostController) {
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedButton(
-            onClick = { /* Se conecta a "registro" en la parte 1c */ },
+            onClick = { navController.navigate("registro") },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
