@@ -9,8 +9,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -62,7 +65,7 @@ fun RecuperarScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de correo
+            // Campo de correo con validación visual
             OutlinedTextField(
                 value = estado.correo,
                 onValueChange = recuperarViewModel::onCorreoChange,
@@ -72,6 +75,23 @@ fun RecuperarScreen(navController: NavHostController) {
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email
                 ),
+                supportingText = {
+                    if (estado.mensajeError.isNotEmpty()) {
+                        Text(
+                            text = estado.mensajeError,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
+                trailingIcon = {
+                    if (estado.mensajeError.isNotEmpty()) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Error en correo electrónico",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -85,15 +105,7 @@ fun RecuperarScreen(navController: NavHostController) {
                 Text("Solicitar recuperación")
             }
 
-            // Muestra errores de validación
-            if (estado.mensajeError.isNotEmpty()) {
-                Text(
-                    text = estado.mensajeError,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-
-            // Muestra el mensaje informativo
+            // Mensaje informativo cuando el correo es válido
             if (estado.mensajeInformativo.isNotEmpty()) {
                 Text(
                     text = estado.mensajeInformativo,

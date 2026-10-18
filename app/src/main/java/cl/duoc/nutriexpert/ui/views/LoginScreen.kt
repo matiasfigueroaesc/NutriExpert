@@ -15,6 +15,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +26,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -36,8 +42,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import cl.duoc.nutriexpert.R
+import cl.duoc.nutriexpert.ui.components.AnimacionExito
 import cl.duoc.nutriexpert.ui.components.CampoFormulario
 import cl.duoc.nutriexpert.viewmodel.LoginViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
@@ -46,15 +54,31 @@ fun LoginScreen(navController: NavHostController) {
     val loginViewModel: LoginViewModel = viewModel()
     val estado = loginViewModel.estado
 
-    // Navega cuando el ViewModel confirma el ingreso
+    // Controla la visualización de la animación
+    var mostrarAnimacion by remember { mutableStateOf(false) }
+
+    // Muestra la animación antes de navegar a Predios
     LaunchedEffect(estado.ingresoCorrecto) {
         if (estado.ingresoCorrecto) {
+            mostrarAnimacion = true
+
+            delay(1500)
+
             navController.navigate("predios") {
                 popUpTo("login") {
                     inclusive = true
                 }
             }
         }
+    }
+
+    // Reemplaza temporalmente el formulario por la animación
+    if (mostrarAnimacion) {
+        AnimacionExito(
+            mensaje = "¡Bienvenido a NutriExpert!",
+            modifier = Modifier.fillMaxSize()
+        )
+        return
     }
 
     Column(
@@ -67,7 +91,7 @@ fun LoginScreen(navController: NavHostController) {
         verticalArrangement = Arrangement.Center
     ) {
 
-        // Logo: hoja blanca dentro de un cuadrado verde redondeado
+        // Logo
         Box(
             modifier = Modifier
                 .size(72.dp)
@@ -128,6 +152,15 @@ fun LoginScreen(navController: NavHostController) {
                     )
                 }
             },
+            trailingIcon = {
+                if (estado.errores.contrasena != null) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Error en contraseña",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password
@@ -135,7 +168,7 @@ fun LoginScreen(navController: NavHostController) {
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Mensaje general: credenciales de prueba incorrectas
+        // Mensaje general del formulario
         // Pendiente: conectar autenticación real con Spring Boot y Retrofit
         if (estado.mensajeError.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
@@ -173,7 +206,6 @@ fun LoginScreen(navController: NavHostController) {
         ) {
             Text("Ingresar", fontSize = 16.sp)
         }
-
 
         Spacer(modifier = Modifier.height(12.dp))
 

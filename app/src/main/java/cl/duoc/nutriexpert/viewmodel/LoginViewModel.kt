@@ -44,7 +44,7 @@ class LoginViewModel : ViewModel() {
         )
     }
 
-    // Valida los campos y comprueba las credenciales de prueba
+    // Valida los campos para permitir el acceso al prototipo
     fun ingresar() {
 
         val errores = validarCamposLogin(
@@ -62,7 +62,7 @@ class LoginViewModel : ViewModel() {
             return
         }
 
-        // Si los campos son válidos, comprueba las credenciales
+        // Si los campos son válidos, comprueba el resultado del login
         val mensaje = validarLogin(
             estado.correo,
             estado.contrasena

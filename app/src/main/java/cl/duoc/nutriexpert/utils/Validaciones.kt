@@ -47,7 +47,7 @@ fun validarCamposLogin(
     )
 }
 
-// Comprueba las validaciones y las credenciales de prueba
+ // Valida los datos ingresados para permitir el acceso al prototipo
 fun validarLogin(
     correo: String,
     contrasena: String
@@ -59,14 +59,7 @@ fun validarLogin(
         return errores.correo ?: errores.contrasena ?: ""
     }
 
-    return if (
-        correo.trim() != "prueba@gmail.com" ||
-        contrasena != "12345678"
-    ) {
-        "Correo o contraseña de prueba incorrectos"
-    } else {
-        ""
-    }
+    return ""
 }
 
 
@@ -81,41 +74,6 @@ fun validarCorreoRecuperacion(correo: String): String {
     }
 }
 
-
-// VALIDACIONES DEL REGISTRO
-//
-fun validarRegistro(
-    nombre: String,
-    correo: String,
-    contrasena: String,
-    confirmarContrasena: String,
-    aceptaPrivacidad: Boolean
-): String {
-    return when {
-        nombre.isBlank() ->
-            "Ingresa tu nombre"
-
-        correo.isBlank() ->
-            "Ingresa tu correo"
-
-        !esEmailValido(correo) ->
-            "El correo no tiene un formato válido"
-
-        contrasena.isBlank() ->
-            "Ingresa tu contraseña"
-
-        contrasena.length < 8 ->
-            "La contraseña debe tener al menos 8 caracteres"
-
-        confirmarContrasena != contrasena ->
-            "Las contraseñas no coinciden"
-
-        !aceptaPrivacidad ->
-            "Debes aceptar la política de privacidad"
-
-        else -> ""
-    }
-}
 
 data class ErroresRegistro(
     val nombre: String = "",
