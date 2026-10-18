@@ -136,6 +136,8 @@ fun LoginScreen(navController: NavHostController) {
                     !esEmailValido(correo) -> "El correo no tiene un formato válido"
                     contrasena.isBlank() -> "Ingresa tu contraseña"
                     contrasena.length < 8 -> "La contraseña debe tener al menos 8 caracteres"
+                    correo.trim() != "prueba@gmail.com" || contrasena != "12345678" ->
+                        "Correo o contraseña de prueba incorrectos"
                     else -> ""
                 }
                 // Si mensajeError quedó vacío, los datos son válidos.
@@ -155,13 +157,13 @@ fun LoginScreen(navController: NavHostController) {
             //Acceso de demostración: todavía no se verifican las cuentas.
         }
         Text(
-            text = "Acceso de demostración: aún no se verifican las cuentas.",
-            fontSize = 12.sp,
+            text = "ACCESO DE PRUEBA\nCorreo: prueba@gmail.com\nContraseña: 12345678",
+            fontSize = 13.sp,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp)
+                .padding(top = 12.dp)
         )
         Spacer(modifier = Modifier.height(12.dp))
 
