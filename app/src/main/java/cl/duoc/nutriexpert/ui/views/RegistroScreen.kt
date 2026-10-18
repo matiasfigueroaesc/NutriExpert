@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import cl.duoc.nutriexpert.utils.esEmailValido
 import androidx.compose.material3.AlertDialog
+import cl.duoc.nutriexpert.utils.validarRegistro
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -222,32 +223,16 @@ fun RegistroScreen(navController: NavHostController) {
             }
 
             // Botón para validar el formulario
+            // Botón para validar el formulario
             Button(
                 onClick = {
-                    mensajeError = when {
-                        nombre.isBlank() ->
-                            "Ingresa tu nombre"
-
-                        correo.isBlank() ->
-                            "Ingresa tu correo"
-
-                        !esEmailValido(correo) ->
-                            "El correo no tiene un formato válido"
-
-                        contrasena.isBlank() ->
-                            "Ingresa tu contraseña"
-
-                        contrasena.length < 8 ->
-                            "La contraseña debe tener al menos 8 caracteres"
-
-                        confirmarContrasena != contrasena ->
-                            "Las contraseñas no coinciden"
-
-                        !aceptaPrivacidad ->
-                            "Debes aceptar la política de privacidad"
-
-                        else -> ""
-                    }
+                    mensajeError = validarRegistro(
+                        nombre,
+                        correo,
+                        contrasena,
+                        confirmarContrasena,
+                        aceptaPrivacidad
+                    )
 
                     // El registro real se conectará al backend.
                     if (mensajeError.isEmpty()) {
@@ -260,15 +245,6 @@ fun RegistroScreen(navController: NavHostController) {
                     .height(50.dp)
             ) {
                 Text("Crear cuenta")
-            }
-
-            // Regresar al Login
-            TextButton(
-                onClick = {
-                    navController.popBackStack()
-                }
-            ) {
-                Text("Volver al inicio de sesión")
             }
         }
     }

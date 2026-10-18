@@ -26,7 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import cl.duoc.nutriexpert.utils.esEmailValido
+import cl.duoc.nutriexpert.utils.validarCorreoRecuperacion
 
 // Placeholder: pantalla "Recuperar contraseña" (pendiente para el equipo)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,11 +75,7 @@ fun RecuperarScreen(navController: NavHostController) {
             )
             Button(
                 onClick = {
-                    mensajeError = when {
-                        correo.isBlank() -> "Ingresa tu correo electrónico"
-                        !esEmailValido(correo) -> "El correo no tiene un formato válido"
-                        else -> ""
-                    }
+                    mensajeError  = validarCorreoRecuperacion(correo)
 
                     mensajeExito = if (mensajeError.isEmpty()) {
                         "Correo válido. La recuperación de contraseña estará disponible cuando conectemos el servidor."

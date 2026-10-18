@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import cl.duoc.nutriexpert.R
-import cl.duoc.nutriexpert.utils.esEmailValido
+import cl.duoc.nutriexpert.utils.validarLogin
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
@@ -131,15 +131,8 @@ fun LoginScreen(navController: NavHostController) {
 
         Button(
             onClick = {
-                mensajeError = when {
-                    correo.isBlank() -> "Ingresa tu correo"
-                    !esEmailValido(correo) -> "El correo no tiene un formato válido"
-                    contrasena.isBlank() -> "Ingresa tu contraseña"
-                    contrasena.length < 8 -> "La contraseña debe tener al menos 8 caracteres"
-                    correo.trim() != "prueba@gmail.com" || contrasena != "12345678" ->
-                        "Correo o contraseña de prueba incorrectos"
-                    else -> ""
-                }
+                mensajeError = validarLogin(correo, contrasena)
+
                 // Si mensajeError quedó vacío, los datos son válidos.
                 // El ingreso real (verificar el usuario) llega con Room.
                 if (mensajeError.isEmpty()) {
