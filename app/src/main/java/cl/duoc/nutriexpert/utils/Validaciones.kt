@@ -63,3 +63,32 @@ fun validarRegistro(
         else -> ""
     }
 }
+
+// Errores del formulario de predio: un mensaje por campo (null = sin error)
+data class ErroresPredio(
+    val nombre: String? = null,
+    val comuna: String? = null,
+    val hectareas: String? = null
+) {
+    fun hayErrores(): Boolean = nombre != null || comuna != null || hectareas != null
+}
+
+// Valida cada campo del predio por separado (RF-09)
+fun validarPredio(nombre: String, comuna: String, hectareas: String): ErroresPredio {
+    val superficie = hectareas.replace(",", ".").toDoubleOrNull()
+    return ErroresPredio(
+        nombre = when {
+            nombre.isBlank() -> "Ingresa el nombre del predio"
+            nombre.trim().length < 3 -> "El nombre debe tener al menos 3 caracteres"
+            else -> null
+        },
+        comuna = if (comuna.isBlank()) "Ingresa la comuna" else null,
+        hectareas = when {
+            hectareas.isBlank() -> "Ingresa la superficie"
+            superficie == null -> "Usa solo números, ej: 7,5"
+            superficie <= 0.0 -> "La superficie debe ser mayor a 0"
+            superficie > 10000.0 -> "La superficie parece demasiado grande"
+            else -> null
+        }
+    )
+}
