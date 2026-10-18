@@ -5,7 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import cl.duoc.nutriexpert.utils.validarRegistro
+import cl.duoc.nutriexpert.utils.ErroresRegistro
+import cl.duoc.nutriexpert.utils.validarCamposRegistro
 
 // Guarda los datos y el resultado del formulario de registro
 data class RegistroState(
@@ -14,6 +15,7 @@ data class RegistroState(
     val contrasena: String = "",
     val confirmarContrasena: String = "",
     val aceptaPrivacidad: Boolean = false,
+    val errores: ErroresRegistro = ErroresRegistro(),
     val mensajeError: String = "",
     val mensajeInformativo: String = ""
 )
@@ -27,6 +29,7 @@ class RegistroViewModel : ViewModel() {
     fun onNombreChange(valor: String) {
         estado = estado.copy(
             nombre = valor,
+            errores = estado.errores.copy(nombre = ""),
             mensajeError = "",
             mensajeInformativo = ""
         )
@@ -35,6 +38,7 @@ class RegistroViewModel : ViewModel() {
     fun onCorreoChange(valor: String) {
         estado = estado.copy(
             correo = valor,
+            errores = estado.errores.copy(correo = ""),
             mensajeError = "",
             mensajeInformativo = ""
         )
@@ -43,6 +47,10 @@ class RegistroViewModel : ViewModel() {
     fun onContrasenaChange(valor: String) {
         estado = estado.copy(
             contrasena = valor,
+            errores = estado.errores.copy(
+                contrasena = "",
+                confirmarContrasena = ""
+            ),
             mensajeError = "",
             mensajeInformativo = ""
         )
@@ -51,6 +59,7 @@ class RegistroViewModel : ViewModel() {
     fun onConfirmarContrasenaChange(valor: String) {
         estado = estado.copy(
             confirmarContrasena = valor,
+            errores = estado.errores.copy(confirmarContrasena = ""),
             mensajeError = "",
             mensajeInformativo = ""
         )
@@ -59,15 +68,16 @@ class RegistroViewModel : ViewModel() {
     fun onAceptaPrivacidadChange(valor: Boolean) {
         estado = estado.copy(
             aceptaPrivacidad = valor,
+            errores = estado.errores.copy(privacidad = ""),
             mensajeError = "",
             mensajeInformativo = ""
         )
     }
 
-    // Utiliza las validaciones existentes del proyecto
+    // Valida cada campo del formulario por separado
     fun registrar() {
 
-        val error = validarRegistro(
+        val erroresFormulario = validarCamposRegistro(
             nombre = estado.nombre,
             correo = estado.correo,
             contrasena = estado.contrasena,
@@ -75,9 +85,10 @@ class RegistroViewModel : ViewModel() {
             aceptaPrivacidad = estado.aceptaPrivacidad
         )
 
-        if (error.isNotEmpty()) {
+        if (erroresFormulario.hayErrores()) {
             estado = estado.copy(
-                mensajeError = error,
+                errores = erroresFormulario,
+                mensajeError = "",
                 mensajeInformativo = ""
             )
             return
@@ -85,6 +96,7 @@ class RegistroViewModel : ViewModel() {
 
         // El backend de registro todavía no está implementado
         estado = estado.copy(
+            errores = ErroresRegistro(),
             mensajeError = "",
             mensajeInformativo =
                 "Formulario válido. El registro aún no está disponible."

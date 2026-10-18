@@ -117,6 +117,67 @@ fun validarRegistro(
     }
 }
 
+data class ErroresRegistro(
+    val nombre: String = "",
+    val correo: String = "",
+    val contrasena: String = "",
+    val confirmarContrasena: String = "",
+    val privacidad: String = ""
+) {
+    fun hayErrores(): Boolean =
+        nombre.isNotEmpty() ||
+                correo.isNotEmpty() ||
+                contrasena.isNotEmpty() ||
+                confirmarContrasena.isNotEmpty() ||
+                privacidad.isNotEmpty()
+}
+
+fun validarCamposRegistro(
+    nombre: String,
+    correo: String,
+    contrasena: String,
+    confirmarContrasena: String,
+    aceptaPrivacidad: Boolean
+
+): ErroresRegistro {
+
+    return ErroresRegistro(
+        nombre = if (nombre.isBlank()) {
+            "Ingresa tu nombre"
+        } else {
+            ""
+        },
+
+        correo = when {
+            correo.isBlank() -> "Ingresa tu correo"
+            !esEmailValido(correo) ->
+                "El correo no tiene un formato válido"
+            else -> ""
+        },
+
+        contrasena = when {
+            contrasena.isBlank() -> "Ingresa tu contraseña"
+            contrasena.length < 8 ->
+                "La contraseña debe tener al menos 8 caracteres"
+            else -> ""
+        },
+
+        confirmarContrasena = if (
+            confirmarContrasena != contrasena
+        ) {
+            "Las contraseñas no coinciden"
+        } else {
+            ""
+        },
+
+        privacidad = if (!aceptaPrivacidad) {
+            "Debes aceptar la política de privacidad"
+        } else {
+            ""
+        }
+    )
+}
+
 
 
 // Errores del formulario de predio: un mensaje por campo (null = sin error)

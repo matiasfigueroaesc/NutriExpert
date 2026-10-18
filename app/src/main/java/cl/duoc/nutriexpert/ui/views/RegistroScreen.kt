@@ -12,10 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -36,10 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import cl.duoc.nutriexpert.viewmodel.RegistroViewModel
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,11 +50,10 @@ fun RegistroScreen(navController: NavHostController) {
     val registroViewModel: RegistroViewModel = viewModel()
     val estado = registroViewModel.estado
 
-    // Estado visual: controla la ventana de privacidad
+    // Controla la ventana de privacidad
     var mostrarPolitica by remember {
         mutableStateOf(false)
     }
-
 
     Scaffold(
         topBar = {
@@ -72,7 +72,6 @@ fun RegistroScreen(navController: NavHostController) {
                         )
                     }
                 },
-
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
@@ -81,8 +80,7 @@ fun RegistroScreen(navController: NavHostController) {
         }
     ) { innerPadding ->
 
-
-    Column(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -106,6 +104,21 @@ fun RegistroScreen(navController: NavHostController) {
                 onValueChange = registroViewModel::onNombreChange,
                 label = { Text("Nombre") },
                 singleLine = true,
+                isError = estado.errores.nombre.isNotEmpty(),
+                supportingText = {
+                    if (estado.errores.nombre.isNotEmpty()) {
+                        Text(estado.errores.nombre)
+                    }
+                },
+                trailingIcon = {
+                    if (estado.errores.nombre.isNotEmpty()) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Error en nombre",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -118,6 +131,21 @@ fun RegistroScreen(navController: NavHostController) {
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email
                 ),
+                isError = estado.errores.correo.isNotEmpty(),
+                supportingText = {
+                    if (estado.errores.correo.isNotEmpty()) {
+                        Text(estado.errores.correo)
+                    }
+                },
+                trailingIcon = {
+                    if (estado.errores.correo.isNotEmpty()) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Error en correo",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -131,19 +159,50 @@ fun RegistroScreen(navController: NavHostController) {
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password
                 ),
+                isError = estado.errores.contrasena.isNotEmpty(),
+                supportingText = {
+                    if (estado.errores.contrasena.isNotEmpty()) {
+                        Text(estado.errores.contrasena)
+                    }
+                },
+                trailingIcon = {
+                    if (estado.errores.contrasena.isNotEmpty()) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Error en contraseña",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
             // Confirmación de contraseña
             OutlinedTextField(
                 value = estado.confirmarContrasena,
-                onValueChange = registroViewModel::onConfirmarContrasenaChange,
+                onValueChange =
+                    registroViewModel::onConfirmarContrasenaChange,
                 label = { Text("Confirmar contraseña") },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password
                 ),
+                isError = estado.errores.confirmarContrasena.isNotEmpty(),
+                supportingText = {
+                    if (estado.errores.confirmarContrasena.isNotEmpty()) {
+                        Text(estado.errores.confirmarContrasena)
+                    }
+                },
+                trailingIcon = {
+                    if (estado.errores.confirmarContrasena.isNotEmpty()) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Error al confirmar contraseña",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -216,6 +275,7 @@ fun RegistroScreen(navController: NavHostController) {
                 )
             }
 
+            // Aceptación de la política de privacidad
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -232,7 +292,17 @@ fun RegistroScreen(navController: NavHostController) {
                 )
             }
 
-            // Muestra errores de validación
+            // Error de aceptación de privacidad
+            if (estado.errores.privacidad.isNotEmpty()) {
+                Text(
+                    text = estado.errores.privacidad,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            // Mensaje general, si se utiliza
             if (estado.mensajeError.isNotEmpty()) {
                 Text(
                     text = estado.mensajeError,
@@ -241,7 +311,7 @@ fun RegistroScreen(navController: NavHostController) {
                 )
             }
 
-            // Muestra el resultado cuando el formulario es válido
+            // Mensaje cuando el formulario es válido
             if (estado.mensajeInformativo.isNotEmpty()) {
                 Text(
                     text = estado.mensajeInformativo,
