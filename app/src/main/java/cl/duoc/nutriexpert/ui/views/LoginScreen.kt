@@ -174,16 +174,6 @@ fun LoginScreen(navController: NavHostController) {
             Text("Ingresar", fontSize = 16.sp)
         }
 
-        // Acceso de demostración: todavía no se verifican cuentas reales
-        Text(
-            text = "ACCESO DE PRUEBA\nCorreo: prueba@gmail.com\nContraseña: 12345678",
-            fontSize = 13.sp,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp)
-        )
 
         Spacer(modifier = Modifier.height(12.dp))
 
