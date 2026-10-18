@@ -1,3 +1,4 @@
+
 package cl.duoc.nutriexpert.ui.views
 
 import androidx.compose.foundation.background
@@ -22,10 +23,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -35,15 +33,29 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import cl.duoc.nutriexpert.R
-import cl.duoc.nutriexpert.utils.validarLogin
+import cl.duoc.nutriexpert.ui.components.CampoFormulario
+import cl.duoc.nutriexpert.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
-    var correo by remember { mutableStateOf("") }
-    var contrasena by remember { mutableStateOf("") }
-    var mensajeError by remember { mutableStateOf("") }
+
+    // Obtiene el ViewModel y el estado del formulario
+    val loginViewModel: LoginViewModel = viewModel()
+    val estado = loginViewModel.estado
+
+    // Navega cuando el ViewModel confirma el ingreso
+    LaunchedEffect(estado.ingresoCorrecto) {
+        if (estado.ingresoCorrecto) {
+            navController.navigate("predios") {
+                popUpTo("login") {
+                    inclusive = true
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -54,11 +66,15 @@ fun LoginScreen(navController: NavHostController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+
         // Logo: hoja blanca dentro de un cuadrado verde redondeado
         Box(
             modifier = Modifier
                 .size(72.dp)
-                .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(18.dp)),
+                .background(
+                    MaterialTheme.colorScheme.primary,
+                    RoundedCornerShape(18.dp)
+                ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -77,6 +93,7 @@ fun LoginScreen(navController: NavHostController) {
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
         )
+
         Text(
             text = "Fertirriego & Programación",
             fontSize = 16.sp,
@@ -85,35 +102,46 @@ fun LoginScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        OutlinedTextField(
-            value = correo,
-            onValueChange = { correo = it },
-            label = { Text("Correo") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            modifier = Modifier.fillMaxWidth()
+        // Campo de correo
+        CampoFormulario(
+            valor = estado.correo,
+            onValorChange = loginViewModel::onCorreoChange,
+            etiqueta = "Correo",
+            error = estado.errores.correo,
+            tipoTeclado = KeyboardType.Email
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // Campo de contraseña
         OutlinedTextField(
-            value = contrasena,
-            onValueChange = { contrasena = it },
+            value = estado.contrasena,
+            onValueChange = loginViewModel::onContrasenaChange,
             label = { Text("Contraseña") },
             singleLine = true,
+            isError = estado.errores.contrasena != null,
+            supportingText = {
+                estado.errores.contrasena?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
             visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password
+            ),
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Si mensajeError quedó vacío, los campos pasaron las validaciones.
-        //  Conectar el Login con Spring Boot mediante Retrofit.
-        // Actualmente solo se permite navegar a Predios para hacer pruebas.
-
-        if (mensajeError.isNotEmpty()) {
+        // Mensaje general: credenciales de prueba incorrectas
+        // Pendiente: conectar autenticación real con Spring Boot y Retrofit
+        if (estado.mensajeError.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
+
             Text(
-                text = mensajeError,
+                text = estado.mensajeError,
                 color = MaterialTheme.colorScheme.error,
                 fontSize = 14.sp,
                 modifier = Modifier.fillMaxWidth()
@@ -121,34 +149,32 @@ fun LoginScreen(navController: NavHostController) {
         }
 
         TextButton(
-            onClick = { navController.navigate("recuperar") },
+            onClick = {
+                navController.navigate("recuperar")
+            },
             modifier = Modifier.align(Alignment.End)
         ) {
-            Text("¿Olvidaste tu contraseña?", color = MaterialTheme.colorScheme.secondary)
+            Text(
+                "¿Olvidaste tu contraseña?",
+                color = MaterialTheme.colorScheme.secondary
+            )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Botón de ingresar
         Button(
             onClick = {
-                mensajeError = validarLogin(correo, contrasena)
-
-                // Si mensajeError quedó vacío, los datos son válidos.
-                // El ingreso real (verificar el usuario) llega con Room.
-                if (mensajeError.isEmpty()) {
-                    navController.navigate("predios") {
-                        // Saca el Login de la pila: con "atrás" no se vuelve al Login
-                        popUpTo("login") { inclusive = true }
-                    }
-                }
+                loginViewModel.ingresar()
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
         ) {
             Text("Ingresar", fontSize = 16.sp)
-            //Acceso de demostración: todavía no se verifican las cuentas.
         }
+
+        // Acceso de demostración: todavía no se verifican cuentas reales
         Text(
             text = "ACCESO DE PRUEBA\nCorreo: prueba@gmail.com\nContraseña: 12345678",
             fontSize = 13.sp,
@@ -158,10 +184,13 @@ fun LoginScreen(navController: NavHostController) {
                 .fillMaxWidth()
                 .padding(top = 12.dp)
         )
+
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedButton(
-            onClick = { navController.navigate("registro") },
+            onClick = {
+                navController.navigate("registro")
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
@@ -171,7 +200,11 @@ fun LoginScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        TextButton(onClick = { /* Tutorial: pendiente */ }) {
+        TextButton(
+            onClick = {
+                /* Tutorial: pendiente */
+            }
+        ) {
             Text("Ver tutorial")
         }
 
@@ -181,7 +214,9 @@ fun LoginScreen(navController: NavHostController) {
             text = "Después del primer ingreso, la app funciona sin conexión.",
             fontSize = 13.sp,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+            color = MaterialTheme.colorScheme.onBackground.copy(
+                alpha = 0.7f
+            )
         )
     }
 }

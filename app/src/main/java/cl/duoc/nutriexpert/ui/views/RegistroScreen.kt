@@ -3,6 +3,7 @@ package cl.duoc.nutriexpert.ui.views
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,30 +33,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import cl.duoc.nutriexpert.utils.esEmailValido
-import androidx.compose.material3.AlertDialog
-import cl.duoc.nutriexpert.utils.validarRegistro
+import cl.duoc.nutriexpert.viewmodel.RegistroViewModel
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistroScreen(navController: NavHostController) {
 
-    // Variables que guardan lo que escribe el usuario
-    var nombre by remember { mutableStateOf("") }
-    var correo by remember { mutableStateOf("") }
-    var contrasena by remember { mutableStateOf("") }
-    var confirmarContrasena by remember { mutableStateOf("") }
-    var aceptaPrivacidad by remember { mutableStateOf(false) }
+    // Obtiene el ViewModel y el estado del registro
+    val registroViewModel: RegistroViewModel = viewModel()
+    val estado = registroViewModel.estado
 
-    // Mensaje para informar errores
-    var mensajeError by remember { mutableStateOf("") }
-    var mostrarPolitica by remember { mutableStateOf(false) }
+    // Estado visual: controla la ventana de privacidad
+    var mostrarPolitica by remember {
+        mutableStateOf(false)
+    }
+
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Crear cuenta") },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            navController.popBackStack()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                            contentDescription = "Volver al Login",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                },
+
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
@@ -63,7 +81,8 @@ fun RegistroScreen(navController: NavHostController) {
         }
     ) { innerPadding ->
 
-        Column(
+
+    Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -83,8 +102,8 @@ fun RegistroScreen(navController: NavHostController) {
 
             // Campo Nombre
             OutlinedTextField(
-                value = nombre,
-                onValueChange = { nombre = it },
+                value = estado.nombre,
+                onValueChange = registroViewModel::onNombreChange,
                 label = { Text("Nombre") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -92,8 +111,8 @@ fun RegistroScreen(navController: NavHostController) {
 
             // Campo Correo
             OutlinedTextField(
-                value = correo,
-                onValueChange = { correo = it },
+                value = estado.correo,
+                onValueChange = registroViewModel::onCorreoChange,
                 label = { Text("Correo electrónico") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -104,8 +123,8 @@ fun RegistroScreen(navController: NavHostController) {
 
             // Campo Contraseña
             OutlinedTextField(
-                value = contrasena,
-                onValueChange = { contrasena = it },
+                value = estado.contrasena,
+                onValueChange = registroViewModel::onContrasenaChange,
                 label = { Text("Contraseña") },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
@@ -117,8 +136,8 @@ fun RegistroScreen(navController: NavHostController) {
 
             // Confirmación de contraseña
             OutlinedTextField(
-                value = confirmarContrasena,
-                onValueChange = { confirmarContrasena = it },
+                value = estado.confirmarContrasena,
+                onValueChange = registroViewModel::onConfirmarContrasenaChange,
                 label = { Text("Confirmar contraseña") },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
@@ -127,7 +146,6 @@ fun RegistroScreen(navController: NavHostController) {
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
-
 
             // Enlace para leer la política de privacidad
             TextButton(
@@ -198,13 +216,14 @@ fun RegistroScreen(navController: NavHostController) {
                 )
             }
 
-            androidx.compose.foundation.layout.Row(
+            Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Checkbox(
-                    checked = aceptaPrivacidad,
-                    onCheckedChange = { aceptaPrivacidad = it }
+                    checked = estado.aceptaPrivacidad,
+                    onCheckedChange =
+                        registroViewModel::onAceptaPrivacidadChange
                 )
 
                 Text(
@@ -213,32 +232,28 @@ fun RegistroScreen(navController: NavHostController) {
                 )
             }
 
-            // Mostrar error cuando corresponda
-            if (mensajeError.isNotEmpty()) {
+            // Muestra errores de validación
+            if (estado.mensajeError.isNotEmpty()) {
                 Text(
-                    text = mensajeError,
+                    text = estado.mensajeError,
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
 
-            // Botón para validar el formulario
+            // Muestra el resultado cuando el formulario es válido
+            if (estado.mensajeInformativo.isNotEmpty()) {
+                Text(
+                    text = estado.mensajeInformativo,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             // Botón para validar el formulario
             Button(
                 onClick = {
-                    mensajeError = validarRegistro(
-                        nombre,
-                        correo,
-                        contrasena,
-                        confirmarContrasena,
-                        aceptaPrivacidad
-                    )
-
-                    // El registro real se conectará al backend.
-                    if (mensajeError.isEmpty()) {
-                        mensajeError =
-                            "Formulario válido. El registro aún no está disponible."
-                    }
+                    registroViewModel.registrar()
                 },
                 modifier = Modifier
                     .fillMaxWidth()
