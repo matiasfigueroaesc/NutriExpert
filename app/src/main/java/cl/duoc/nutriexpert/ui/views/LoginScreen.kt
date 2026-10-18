@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import cl.duoc.nutriexpert.R
-import cl.duoc.nutriexpert.utils.esEmailValido
+import cl.duoc.nutriexpert.utils.validarLogin
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
@@ -106,7 +106,10 @@ fun LoginScreen(navController: NavHostController) {
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Mensaje de error de la validación (solo se muestra si hay uno)
+        // Si mensajeError quedó vacío, los campos pasaron las validaciones.
+        //  Conectar el Login con Spring Boot mediante Retrofit.
+        // Actualmente solo se permite navegar a Predios para hacer pruebas.
+
         if (mensajeError.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -128,13 +131,8 @@ fun LoginScreen(navController: NavHostController) {
 
         Button(
             onClick = {
-                mensajeError = when {
-                    correo.isBlank() -> "Ingresa tu correo"
-                    !esEmailValido(correo) -> "El correo no tiene un formato válido"
-                    contrasena.isBlank() -> "Ingresa tu contraseña"
-                    contrasena.length < 8 -> "La contraseña debe tener al menos 8 caracteres"
-                    else -> ""
-                }
+                mensajeError = validarLogin(correo, contrasena)
+
                 // Si mensajeError quedó vacío, los datos son válidos.
                 // El ingreso real (verificar el usuario) llega con Room.
                 if (mensajeError.isEmpty()) {
@@ -149,8 +147,17 @@ fun LoginScreen(navController: NavHostController) {
                 .height(50.dp)
         ) {
             Text("Ingresar", fontSize = 16.sp)
+            //Acceso de demostración: todavía no se verifican las cuentas.
         }
-
+        Text(
+            text = "ACCESO DE PRUEBA\nCorreo: prueba@gmail.com\nContraseña: 12345678",
+            fontSize = 13.sp,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp)
+        )
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedButton(
