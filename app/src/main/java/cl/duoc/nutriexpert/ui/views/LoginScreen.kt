@@ -106,7 +106,10 @@ fun LoginScreen(navController: NavHostController) {
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Mensaje de error de la validación (solo se muestra si hay uno)
+        // Si mensajeError quedó vacío, los campos pasaron las validaciones.
+        //  Conectar el Login con Spring Boot mediante Retrofit.
+        // Actualmente solo se permite navegar a Predios para hacer pruebas.
+
         if (mensajeError.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -149,8 +152,17 @@ fun LoginScreen(navController: NavHostController) {
                 .height(50.dp)
         ) {
             Text("Ingresar", fontSize = 16.sp)
+            //Acceso de demostración: todavía no se verifican las cuentas.
         }
-
+        Text(
+            text = "Acceso de demostración: aún no se verifican las cuentas.",
+            fontSize = 12.sp,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+        )
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedButton(
