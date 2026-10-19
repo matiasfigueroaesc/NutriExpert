@@ -72,7 +72,8 @@ class PredioFormViewModel(application: Application) : AndroidViewModel(applicati
         estado = estado.copy(latitud = latitud, longitud = longitud)
     }
 
-    fun onFotoChange(uri: String) {
+    // uri = null cuando el usuario quita la foto
+    fun onFotoChange(uri: String?) {
         estado = estado.copy(fotoUri = uri)
     }
 

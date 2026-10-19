@@ -36,6 +36,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import cl.duoc.nutriexpert.ui.components.CampoFormulario
 import cl.duoc.nutriexpert.viewmodel.PredioFormViewModel
+import cl.duoc.nutriexpert.ui.components.FotoPredioSection
+import cl.duoc.nutriexpert.ui.components.UbicacionPredioSection
 
 // Formulario para crear (predioId = 0) o editar un predio (RF-09).
 // La pantalla solo dibuja el estado del ViewModel y le avisa lo que hace el usuario.
@@ -118,28 +120,17 @@ fun PredioFormScreen(
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Ubicación y foto",
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = if (estado.latitud != null && estado.longitud != null) {
-                            "Ubicación: %.5f, %.5f".format(estado.latitud, estado.longitud)
-                        } else {
-                            "Ubicación: sin registrar"
-                        },
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                    Text(
-                        text = if (estado.fotoUri != null) "Foto: guardada" else "Foto: sin registrar",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                }
+                // Recursos nativos: GPS y cámara/galería
+                UbicacionPredioSection(
+                    latitud = estado.latitud,
+                    longitud = estado.longitud,
+                    onUbicacionObtenida = { lat, lon -> viewModel.onUbicacionChange(lat, lon) }
+                )
+
+                FotoPredioSection(
+                    fotoUri = estado.fotoUri,
+                    onFotoSeleccionada = { viewModel.onFotoChange(it) }
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
