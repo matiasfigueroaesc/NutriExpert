@@ -3,6 +3,7 @@ package cl.duoc.nutriexpert.ui.views
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,9 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -31,37 +38,50 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import cl.duoc.nutriexpert.utils.esEmailValido
-import androidx.compose.material3.AlertDialog
-import cl.duoc.nutriexpert.utils.validarRegistro
+import cl.duoc.nutriexpert.viewmodel.RegistroViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistroScreen(navController: NavHostController) {
 
-    // Variables que guardan lo que escribe el usuario
-    var nombre by remember { mutableStateOf("") }
-    var correo by remember { mutableStateOf("") }
-    var contrasena by remember { mutableStateOf("") }
-    var confirmarContrasena by remember { mutableStateOf("") }
-    var aceptaPrivacidad by remember { mutableStateOf(false) }
+    // Obtiene el ViewModel y el estado del registro
+    val registroViewModel: RegistroViewModel = viewModel()
+    val estado = registroViewModel.estado
 
-    // Mensaje para informar errores
-    var mensajeError by remember { mutableStateOf("") }
-    var mostrarPolitica by remember { mutableStateOf(false) }
+    // Controla la ventana de privacidad
+    var mostrarPolitica by remember {
+        mutableStateOf(false)
+    }
+
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Crear cuenta") },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            navController.popBackStack()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver al Login",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
     ) { innerPadding ->
+
 
         Column(
             modifier = Modifier
@@ -83,51 +103,111 @@ fun RegistroScreen(navController: NavHostController) {
 
             // Campo Nombre
             OutlinedTextField(
-                value = nombre,
-                onValueChange = { nombre = it },
+                value = estado.nombre,
+                onValueChange = registroViewModel::onNombreChange,
                 label = { Text("Nombre") },
                 singleLine = true,
+                isError = estado.errores.nombre.isNotEmpty(),
+                supportingText = {
+                    if (estado.errores.nombre.isNotEmpty()) {
+                        Text(estado.errores.nombre)
+                    }
+                },
+                trailingIcon = {
+                    if (estado.errores.nombre.isNotEmpty()) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Error en nombre",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
             // Campo Correo
             OutlinedTextField(
-                value = correo,
-                onValueChange = { correo = it },
+                value = estado.correo,
+                onValueChange = registroViewModel::onCorreoChange,
                 label = { Text("Correo electrónico") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email
                 ),
+                isError = estado.errores.correo.isNotEmpty(),
+                supportingText = {
+                    if (estado.errores.correo.isNotEmpty()) {
+                        Text(estado.errores.correo)
+                    }
+                },
+                trailingIcon = {
+                    if (estado.errores.correo.isNotEmpty()) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Error en correo",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
             // Campo Contraseña
             OutlinedTextField(
-                value = contrasena,
-                onValueChange = { contrasena = it },
+                value = estado.contrasena,
+                onValueChange = registroViewModel::onContrasenaChange,
                 label = { Text("Contraseña") },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password
                 ),
+                isError = estado.errores.contrasena.isNotEmpty(),
+                supportingText = {
+                    if (estado.errores.contrasena.isNotEmpty()) {
+                        Text(estado.errores.contrasena)
+                    }
+                },
+                trailingIcon = {
+                    if (estado.errores.contrasena.isNotEmpty()) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Error en contraseña",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
             // Confirmación de contraseña
             OutlinedTextField(
-                value = confirmarContrasena,
-                onValueChange = { confirmarContrasena = it },
+                value = estado.confirmarContrasena,
+                onValueChange =
+                    registroViewModel::onConfirmarContrasenaChange,
                 label = { Text("Confirmar contraseña") },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password
                 ),
+                isError = estado.errores.confirmarContrasena.isNotEmpty(),
+                supportingText = {
+                    if (estado.errores.confirmarContrasena.isNotEmpty()) {
+                        Text(estado.errores.confirmarContrasena)
+                    }
+                },
+                trailingIcon = {
+                    if (estado.errores.confirmarContrasena.isNotEmpty()) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Error al confirmar contraseña",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
-
 
             // Enlace para leer la política de privacidad
             TextButton(
@@ -198,13 +278,15 @@ fun RegistroScreen(navController: NavHostController) {
                 )
             }
 
-            androidx.compose.foundation.layout.Row(
+            // Aceptación de la política de privacidad
+            Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Checkbox(
-                    checked = aceptaPrivacidad,
-                    onCheckedChange = { aceptaPrivacidad = it }
+                    checked = estado.aceptaPrivacidad,
+                    onCheckedChange =
+                        registroViewModel::onAceptaPrivacidadChange
                 )
 
                 Text(
@@ -213,32 +295,38 @@ fun RegistroScreen(navController: NavHostController) {
                 )
             }
 
-            // Mostrar error cuando corresponda
-            if (mensajeError.isNotEmpty()) {
+            // Error de aceptación de privacidad
+            if (estado.errores.privacidad.isNotEmpty()) {
                 Text(
-                    text = mensajeError,
+                    text = estado.errores.privacidad,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            // Mensaje general, si se utiliza
+            if (estado.mensajeError.isNotEmpty()) {
+                Text(
+                    text = estado.mensajeError,
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
 
-            // Botón para validar el formulario
+            // Mensaje cuando el formulario es válido
+            if (estado.mensajeInformativo.isNotEmpty()) {
+                Text(
+                    text = estado.mensajeInformativo,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             // Botón para validar el formulario
             Button(
                 onClick = {
-                    mensajeError = validarRegistro(
-                        nombre,
-                        correo,
-                        contrasena,
-                        confirmarContrasena,
-                        aceptaPrivacidad
-                    )
-
-                    // El registro real se conectará al backend.
-                    if (mensajeError.isEmpty()) {
-                        mensajeError =
-                            "Formulario válido. El registro aún no está disponible."
-                    }
+                    registroViewModel.registrar()
                 },
                 modifier = Modifier
                     .fillMaxWidth()

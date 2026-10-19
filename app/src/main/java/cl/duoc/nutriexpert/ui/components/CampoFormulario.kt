@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
+
 // Campo de texto reutilizable con validación por campo:
 // - si "error" no es null, el borde se pone rojo, aparece un ícono de alerta
 //   y el mensaje se muestra debajo con una animación.
