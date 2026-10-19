@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Carpeta interna donde se guardan las fotos de los predios (usada por FileProvider). -->
+<paths>
+    <files-path
+        name="fotos_predios"
+        path="fotos_predios/" />
+</paths>
