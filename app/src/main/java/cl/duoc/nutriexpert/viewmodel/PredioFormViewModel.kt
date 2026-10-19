@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import cl.duoc.nutriexpert.data.local.AppDatabase
 import cl.duoc.nutriexpert.data.local.PredioEntity
 import cl.duoc.nutriexpert.data.repository.PredioRepository
+import cl.duoc.nutriexpert.nativo.FotoHelper
 import cl.duoc.nutriexpert.utils.ErroresPredio
 import cl.duoc.nutriexpert.utils.validarPredio
 import kotlinx.coroutines.launch
@@ -37,11 +38,15 @@ class PredioFormViewModel(application: Application) : AndroidViewModel(applicati
     var estado by mutableStateOf(PredioFormState())
         private set
 
+    // Foto que el predio tiene guardada en Room (null si es nuevo o no tenía)
+    private var fotoOriginal: String? = null
+
     // Si el id es distinto de 0, carga el predio para editarlo
     fun cargar(id: Int) {
         if (id == 0 || estado.id == id) return
         viewModelScope.launch {
             val predio = repository.obtenerPorId(id) ?: return@launch
+            fotoOriginal = predio.fotoUri
             estado = PredioFormState(
                 id = predio.id,
                 nombre = predio.nombre,
@@ -72,8 +77,15 @@ class PredioFormViewModel(application: Application) : AndroidViewModel(applicati
         estado = estado.copy(latitud = latitud, longitud = longitud)
     }
 
-    // uri = null cuando el usuario quita la foto
+    // uri = null cuando el usuario quita la foto.
+    // La foto guardada en Room (fotoOriginal) no se borra aquí: solo al guardar,
+    // así no se pierde si el usuario sale sin guardar.
     fun onFotoChange(uri: String?) {
+        val anterior = estado.fotoUri
+        // Una foto nueva que se reemplaza antes de guardar no la usa nadie: se borra
+        if (anterior != null && anterior != fotoOriginal && anterior != uri) {
+            FotoHelper.borrar(getApplication(), anterior)
+        }
         estado = estado.copy(fotoUri = uri)
     }
 
@@ -95,7 +107,21 @@ class PredioFormViewModel(application: Application) : AndroidViewModel(applicati
                     fotoUri = estado.fotoUri
                 )
             )
+            // Ya guardado: si la foto cambió, la anterior ya no se usa
+            if (fotoOriginal != null && fotoOriginal != estado.fotoUri) {
+                FotoHelper.borrar(getApplication(), fotoOriginal)
+            }
+            fotoOriginal = estado.fotoUri
             estado = estado.copy(guardado = true)
+        }
+    }
+
+    // Se llama al salir del formulario. Si no se guardó, se descarta la foto nueva
+    // y la original queda intacta.
+    override fun onCleared() {
+        val actual = estado.fotoUri
+        if (!estado.guardado && actual != null && actual != fotoOriginal) {
+            FotoHelper.borrar(getApplication(), actual)
         }
     }
 }

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import cl.duoc.nutriexpert.data.local.AppDatabase
 import cl.duoc.nutriexpert.data.local.PredioEntity
 import cl.duoc.nutriexpert.data.repository.PredioRepository
+import cl.duoc.nutriexpert.nativo.FotoHelper
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -26,6 +27,8 @@ class PrediosViewModel(application: Application) : AndroidViewModel(application)
     fun eliminar(predio: PredioEntity) {
         viewModelScope.launch {
             repository.eliminar(predio)
+            // También se borra su foto para no dejar archivos huérfanos
+            FotoHelper.borrar(getApplication(), predio.fotoUri)
         }
     }
 }

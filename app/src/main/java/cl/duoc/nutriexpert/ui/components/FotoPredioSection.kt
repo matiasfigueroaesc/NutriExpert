@@ -60,7 +60,8 @@ import kotlinx.coroutines.launch
  * o elegirla de la galería, y ver la vista previa.
  *
  * Avisa la ruta nueva (o null si se quitó) con [onFotoSeleccionada];
- * el ViewModel la guarda en el campo fotoUri del predio.
+ * el ViewModel la guarda en el campo fotoUri del predio y decide cuándo
+ * borrar la foto anterior (recién al guardar el predio).
  */
 @Composable
 fun FotoPredioSection(
@@ -80,8 +81,8 @@ fun FotoPredioSection(
         value = fotoUri?.let { FotoHelper.cargarVistaPrevia(context, it) }
     }
 
+    // La foto anterior no se borra aquí: si el usuario sale sin guardar, debe seguir existiendo
     fun reemplazarFoto(nueva: String) {
-        if (fotoUri != null && fotoUri != nueva) FotoHelper.borrar(context, fotoUri)
         onFotoSeleccionada(nueva)
     }
 
@@ -196,10 +197,7 @@ fun FotoPredioSection(
             }
 
             if (fotoUri != null) {
-                TextButton(onClick = {
-                    FotoHelper.borrar(context, fotoUri)
-                    onFotoSeleccionada(null)
-                }) {
+                TextButton(onClick = { onFotoSeleccionada(null) }) {
                     Icon(Icons.Filled.Delete, contentDescription = null)
                     Spacer(Modifier.width(6.dp))
                     Text("Quitar foto")
