@@ -67,7 +67,7 @@ app/src/main/java/cl/duoc/nutriexpert/
 ├── nativo/        # Ayudantes de GPS (UbicacionHelper) y cámara/galería (FotoHelper)
 ├── ui/
 │   ├── components/  # Componentes reutilizables (campos con ícono, ubicación, foto)
-│   └── screens/     # Pantallas de la app
+│   └── views/       # Pantallas de la app
 └── viewmodel/     # ViewModels
 ```
 
@@ -77,4 +77,4 @@ app/src/main/java/cl/duoc/nutriexpert/
 - Cada rama se une a `develop` mediante Pull Request.
 - Commits en español con prefijo `feat:` o `fix:`.
 - Tareas organizadas en Trello, una tarjeta por tarea con su responsable.
-- Tablero de tareas: [Trello NutriExpert] (https://trello.com/b/PKewiNe3)
+- Tablero de tareas: [Trello NutriExpert](https://trello.com/b/PKewiNe3)

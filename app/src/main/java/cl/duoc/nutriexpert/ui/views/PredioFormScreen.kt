@@ -16,8 +16,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,9 +33,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import cl.duoc.nutriexpert.ui.components.CampoFormulario
-import cl.duoc.nutriexpert.viewmodel.PredioFormViewModel
 import cl.duoc.nutriexpert.ui.components.FotoPredioSection
 import cl.duoc.nutriexpert.ui.components.UbicacionPredioSection
+import cl.duoc.nutriexpert.viewmodel.PredioFormViewModel
 
 // Formulario para crear (predioId = 0) o editar un predio (RF-09).
 // La pantalla solo dibuja el estado del ViewModel y le avisa lo que hace el usuario.
@@ -112,26 +110,18 @@ fun PredioFormScreen(
                 tipoTeclado = KeyboardType.Decimal
             )
 
-            // Recursos nativos: aquí van los botones de GPS y cámara (parte de Fabián).
-            // Para guardar usen viewModel.onUbicacionChange(lat, lon) y viewModel.onFotoChange(uri).
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // Recursos nativos: GPS y cámara/galería
-                UbicacionPredioSection(
-                    latitud = estado.latitud,
-                    longitud = estado.longitud,
-                    onUbicacionObtenida = { lat, lon -> viewModel.onUbicacionChange(lat, lon) }
-                )
+            // Recursos nativos: GPS y cámara/galería.
+            // Cada sección avisa al ViewModel; se guardan en Room junto con el predio.
+            UbicacionPredioSection(
+                latitud = estado.latitud,
+                longitud = estado.longitud,
+                onUbicacionObtenida = { lat, lon -> viewModel.onUbicacionChange(lat, lon) }
+            )
 
-                FotoPredioSection(
-                    fotoUri = estado.fotoUri,
-                    onFotoSeleccionada = { viewModel.onFotoChange(it) }
-                )
-            }
+            FotoPredioSection(
+                fotoUri = estado.fotoUri,
+                onFotoSeleccionada = { viewModel.onFotoChange(it) }
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
