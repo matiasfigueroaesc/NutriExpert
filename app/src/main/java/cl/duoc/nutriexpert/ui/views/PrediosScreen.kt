@@ -128,9 +128,9 @@ fun PrediosScreen(
                 color = MaterialTheme.colorScheme.secondary
             )
 
-            // Entrada al asistente del plan nutricional (5 pasos)
+            // Entrada al asistente del plan nutricional (4 pasos)
             OutlinedButton(
-                onClick = { navController.navigate("plan/meta") },
+                onClick = { navController.navigate("plan/cultivo") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp)

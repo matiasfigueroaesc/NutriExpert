@@ -16,10 +16,12 @@ import cl.duoc.nutriexpert.domain.motor.MetaNeta
 import cl.duoc.nutriexpert.domain.motor.ResultadoDosis
 import cl.duoc.nutriexpert.domain.motor.itemsSemanaEtapa
 
-// Estado del asistente: lo que el usuario va eligiendo en los 5 pasos.
+// Estado del asistente: lo que el usuario va eligiendo en las 4 preguntas.
 // Los valores por defecto reproducen los casos CP-01 a CP-03 (tomate, 5 ha, estanque de 1000 L).
 data class PlanState(
-    // Paso 1 · Meta
+    // Sección "Ajustes del asesor": una sola para todo el asistente, cerrada por defecto
+    val mostrarAjustes: Boolean = false,
+    // Paso 1 · Cultivo
     val cultivo: CultivoEjemplo = CatalogoEjemplo.TOMATE,
     val hectareas: String = "5",
     val demanda: Map<Nutriente, String> = textoDe(CatalogoEjemplo.TOMATE.demanda),
@@ -28,12 +30,11 @@ data class PlanState(
     // Paso 2 · Fertilizantes
     val seleccionados: Set<String> = CatalogoEjemplo.PREFERIDOS_POR_DEFECTO,
     val errorFertilizantes: String? = null,
-    // Paso 3 · Dosis
+    // Paso 3 · Resumen
     val mostrarDetalle: Boolean = false,
-    // Paso 4 · Distribución (% de cada etapa, por nutriente)
+    // Paso 4 · Semana: % de cada etapa por nutriente (ajuste del asesor) y estanques
     val nutrienteVista: Nutriente = Nutriente.K2O,
     val curvas: Map<Nutriente, List<Double>> = curvasDe(CatalogoEjemplo.TOMATE),
-    // Paso 5 · Estanques
     val etapaEstanque: Int = 2,
     val volumenL: Double = 1000.0,
     val cmaxPct: Double = Estanques.CMAX_POR_DEFECTO
@@ -59,7 +60,15 @@ class PlanViewModel : ViewModel() {
     val cultivos = CatalogoEjemplo.CULTIVOS
     val fertilizantes = CatalogoEjemplo.FERTILIZANTES
 
-    // ---------- Paso 1 · Meta ----------
+    // Abre o cierra la sección "Ajustes del asesor"
+    fun onMostrarAjustesChange(mostrar: Boolean) {
+        estado = estado.copy(mostrarAjustes = mostrar)
+    }
+
+    // Superficie como número (0 si el texto no es válido)
+    fun hectareasNumero(): Double = aNumero(estado.hectareas) ?: 0.0
+
+    // ---------- Paso 1 · Cultivo ----------
 
     fun onCultivoChange(cultivo: CultivoEjemplo) {
         estado = estado.copy(
@@ -110,7 +119,7 @@ class PlanViewModel : ViewModel() {
         return error == null
     }
 
-    // ---------- Paso 3 · Dosis ----------
+    // ---------- Paso 3 · Resumen ----------
 
     fun onMostrarDetalleChange(mostrar: Boolean) {
         estado = estado.copy(mostrarDetalle = mostrar)
@@ -120,7 +129,7 @@ class PlanViewModel : ViewModel() {
     fun resultado(): ResultadoDosis =
         CalculoInverso.calcular(meta(), fertilizantes.filter { it.id in estado.seleccionados })
 
-    // ---------- Paso 4 · Distribución ----------
+    // ---------- Paso 4 · Semana ----------
 
     fun onNutrienteVistaChange(nutriente: Nutriente) {
         estado = estado.copy(nutrienteVista = nutriente)
@@ -139,8 +148,6 @@ class PlanViewModel : ViewModel() {
             etapa.copy(curva = Nutriente.entries.associateWith { n -> estado.curvas.getValue(n)[i] })
         }
 
-    // ---------- Paso 5 · Estanques ----------
-
     fun onEtapaEstanqueChange(indice: Int) {
         estado = estado.copy(etapaEstanque = indice)
     }
@@ -155,9 +162,8 @@ class PlanViewModel : ViewModel() {
 
     // Estanques A y B para una semana de la etapa elegida
     fun estanques(): List<Estanque> {
-        val ha = aNumero(estado.hectareas) ?: 0.0
         val etapa = etapas()[estado.etapaEstanque]
-        val items = itemsSemanaEtapa(resultado().dosis, etapa, ha)
+        val items = itemsSemanaEtapa(resultado().dosis, etapa, hectareasNumero())
         return Estanques.armar(items, estado.volumenL, estado.cmaxPct)
     }
 }

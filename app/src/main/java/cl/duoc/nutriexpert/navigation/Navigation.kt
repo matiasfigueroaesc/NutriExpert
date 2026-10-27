@@ -9,11 +9,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import cl.duoc.nutriexpert.ui.plan.PlanDistribucionScreen
-import cl.duoc.nutriexpert.ui.plan.PlanDosisScreen
-import cl.duoc.nutriexpert.ui.plan.PlanEstanquesScreen
+import cl.duoc.nutriexpert.ui.plan.PlanCultivoScreen
 import cl.duoc.nutriexpert.ui.plan.PlanFertilizantesScreen
-import cl.duoc.nutriexpert.ui.plan.PlanMetaScreen
+import cl.duoc.nutriexpert.ui.plan.PlanResumenScreen
+import cl.duoc.nutriexpert.ui.plan.PlanSemanaScreen
 import cl.duoc.nutriexpert.ui.views.LoginScreen
 import cl.duoc.nutriexpert.ui.views.PredioFormScreen
 import cl.duoc.nutriexpert.ui.views.PrediosScreen
@@ -26,7 +25,7 @@ private const val DURACION_TRANSICION = 300
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
-    // Un solo ViewModel para los 5 pasos del asistente, así no se pierde lo elegido
+    // Un solo ViewModel para los 4 pasos del asistente, así no se pierde lo elegido
     val planViewModel: PlanViewModel = viewModel()
 
     NavHost(
@@ -71,11 +70,10 @@ fun AppNavigation(navController: NavHostController) {
             val id = backStackEntry.arguments?.getInt("id") ?: 0
             PredioFormScreen(navController, id)
         }
-        // Asistente del plan nutricional en 5 pasos
-        composable("plan/meta") { PlanMetaScreen(navController, planViewModel) }
+        // Asistente del plan nutricional en 4 preguntas
+        composable("plan/cultivo") { PlanCultivoScreen(navController, planViewModel) }
         composable("plan/fertilizantes") { PlanFertilizantesScreen(navController, planViewModel) }
-        composable("plan/dosis") { PlanDosisScreen(navController, planViewModel) }
-        composable("plan/distribucion") { PlanDistribucionScreen(navController, planViewModel) }
-        composable("plan/estanques") { PlanEstanquesScreen(navController, planViewModel) }
+        composable("plan/resumen") { PlanResumenScreen(navController, planViewModel) }
+        composable("plan/semana") { PlanSemanaScreen(navController, planViewModel) }
     }
 }
