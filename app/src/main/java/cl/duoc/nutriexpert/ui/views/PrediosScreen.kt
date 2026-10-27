@@ -35,6 +35,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -126,6 +127,16 @@ fun PrediosScreen(
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.secondary
             )
+
+            // Entrada al asistente del plan nutricional (5 pasos)
+            OutlinedButton(
+                onClick = { navController.navigate("plan/meta") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            ) {
+                Text("Nuevo plan nutricional")
+            }
 
             // Mensaje cuando todavía no hay predios (aparece con animación)
             AnimatedVisibility(

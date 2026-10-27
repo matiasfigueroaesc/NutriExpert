@@ -3,22 +3,32 @@ package cl.duoc.nutriexpert.navigation
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import cl.duoc.nutriexpert.ui.plan.PlanDistribucionScreen
+import cl.duoc.nutriexpert.ui.plan.PlanDosisScreen
+import cl.duoc.nutriexpert.ui.plan.PlanEstanquesScreen
+import cl.duoc.nutriexpert.ui.plan.PlanFertilizantesScreen
+import cl.duoc.nutriexpert.ui.plan.PlanMetaScreen
 import cl.duoc.nutriexpert.ui.views.LoginScreen
 import cl.duoc.nutriexpert.ui.views.PredioFormScreen
 import cl.duoc.nutriexpert.ui.views.PrediosScreen
 import cl.duoc.nutriexpert.ui.views.RecuperarScreen
 import cl.duoc.nutriexpert.ui.views.RegistroScreen
+import cl.duoc.nutriexpert.viewmodel.PlanViewModel
 
 // Duración de la animación al cambiar de pantalla (en milisegundos)
 private const val DURACION_TRANSICION = 300
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
+    // Un solo ViewModel para los 5 pasos del asistente, así no se pierde lo elegido
+    val planViewModel: PlanViewModel = viewModel()
+
     NavHost(
         navController = navController,
         startDestination = "login",
@@ -61,5 +71,11 @@ fun AppNavigation(navController: NavHostController) {
             val id = backStackEntry.arguments?.getInt("id") ?: 0
             PredioFormScreen(navController, id)
         }
+        // Asistente del plan nutricional en 5 pasos
+        composable("plan/meta") { PlanMetaScreen(navController, planViewModel) }
+        composable("plan/fertilizantes") { PlanFertilizantesScreen(navController, planViewModel) }
+        composable("plan/dosis") { PlanDosisScreen(navController, planViewModel) }
+        composable("plan/distribucion") { PlanDistribucionScreen(navController, planViewModel) }
+        composable("plan/estanques") { PlanEstanquesScreen(navController, planViewModel) }
     }
 }
