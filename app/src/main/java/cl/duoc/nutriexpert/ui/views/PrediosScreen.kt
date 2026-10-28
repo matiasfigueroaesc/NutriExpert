@@ -150,7 +150,8 @@ fun PrediosScreen(
                         predio = predio,
                         onEditar = { navController.navigate("predio_form/${predio.id}") },
                         onEliminar = { predioAEliminar = predio },
-                        // Anima la tarjeta cuando se agrega, borra o cambia de lugar
+                        onVerSectores = {
+                            navController.navigate("sectores/${predio.id}")},
                         modifier = Modifier.animateItem()
                     )
                 }
@@ -189,6 +190,7 @@ fun PredioCard(
     predio: PredioEntity,
     onEditar: () -> Unit,
     onEliminar: () -> Unit,
+    onVerSectores: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expandida by remember { mutableStateOf(false) }
@@ -261,6 +263,12 @@ fun PredioCard(
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
+                }
+                TextButton(
+                    onClick = onVerSectores,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Ver sectores")
                 }
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                     TextButton(onClick = onEditar) {
