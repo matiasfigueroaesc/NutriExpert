@@ -20,6 +20,7 @@ fun SectoresScreen(
     viewModel: SectoresViewModel,
     onCrearSector: () -> Unit,
     onVerAnalisis: (Int) -> Unit,
+    onCrearPlan: (SectorEntity) -> Unit,
     onVolver: () -> Unit
 ) {
     // Al abrir la pantalla, carga desde Room los sectores de este predio
@@ -71,6 +72,9 @@ fun SectoresScreen(
                         sector = sector,
                         onVerAnalisis = {
                             onVerAnalisis(sector.id)
+                        },
+                        onCrearPlan = {
+                            onCrearPlan(sector)
                         }
                     )
                 }
@@ -89,7 +93,8 @@ fun SectoresScreen(
 @Composable
 private fun SectorCard(
     sector: SectorEntity,
-    onVerAnalisis: () -> Unit
+    onVerAnalisis: () -> Unit,
+    onCrearPlan: () -> Unit
 ) {
 
     val nombreCultivo = when (sector.cultivoId) {
@@ -114,6 +119,13 @@ private fun SectorCard(
             Text("Cultivo: $nombreCultivo")
 
             Text("Superficie: ${sector.hectareas} ha")
+
+            Button(
+                onClick = onCrearPlan,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Crear plan")
+            }
 
             TextButton(
                 onClick = onVerAnalisis,
