@@ -5,6 +5,9 @@ on:
     branches: [ci/apk-demo]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   apk:
     runs-on: ubuntu-latest
@@ -22,3 +25,12 @@ jobs:
         with:
           name: NutriExpert-demo
           path: app/build/outputs/apk/debug/app-debug.apk
+      - name: Guardar el APK en la rama para descargarlo
+        run: |
+          mkdir -p apk
+          cp app/build/outputs/apk/debug/app-debug.apk apk/NutriExpert-demo.apk
+          git config user.name "matias"
+          git config user.email "mat.figueroae@duocuc.cl"
+          git add -f apk/NutriExpert-demo.apk
+          git commit -m "build: APK de prueba"
+          git push origin HEAD:ci/apk-demo
