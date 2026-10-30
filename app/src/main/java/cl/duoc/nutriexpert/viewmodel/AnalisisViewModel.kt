@@ -5,6 +5,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import cl.duoc.nutriexpert.data.local.AnalisisEntity
+import cl.duoc.nutriexpert.data.local.AppDatabase
 import cl.duoc.nutriexpert.data.repository.AnalisisRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -29,6 +30,13 @@ class AnalisisViewModel(
 
     private var repository: AnalisisRepository? = null
     private var cargaJob: Job? = null
+
+    // Se conecta solo a Room al crearse (igual que PrediosViewModel)
+    init {
+        configurarRepositorio(
+            AnalisisRepository(AppDatabase.obtener(application).analisisDao())
+        )
+    }
 
     fun configurarRepositorio(repo: AnalisisRepository) {
         cargaJob?.cancel()

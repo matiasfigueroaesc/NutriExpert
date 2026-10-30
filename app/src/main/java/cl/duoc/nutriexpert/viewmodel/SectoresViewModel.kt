@@ -4,6 +4,7 @@ package cl.duoc.nutriexpert.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import cl.duoc.nutriexpert.data.local.AppDatabase
 import cl.duoc.nutriexpert.data.local.SectorEntity
 import cl.duoc.nutriexpert.data.repository.SectorRepository
 import kotlinx.coroutines.CancellationException
@@ -29,6 +30,13 @@ class SectoresViewModel(
 
     private var repository: SectorRepository? = null
     private var cargaJob: Job? = null
+
+    // Se conecta solo a Room al crearse (igual que PrediosViewModel)
+    init {
+        configurarRepositorio(
+            SectorRepository(AppDatabase.obtener(application).sectorDao())
+        )
+    }
 
     fun configurarRepositorio(repo: SectorRepository) {
         cargaJob?.cancel()
