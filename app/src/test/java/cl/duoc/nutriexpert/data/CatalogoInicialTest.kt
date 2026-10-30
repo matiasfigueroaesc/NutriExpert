@@ -43,7 +43,28 @@ class CatalogoInicialTest {
         }
     }
 
-    // TODO: cuando el catálogo esté completo, agregar:
-    // assertEquals(6, CatalogoInicial.fertilizantes.size)
-    // assertEquals(2, CatalogoInicial.cultivos.size)
+    @Test
+    fun catalogoTieneSeisFertilizantesYDosCultivos() {
+        assertEquals(6, CatalogoInicial.fertilizantes.size)
+        assertEquals(2, CatalogoInicial.cultivos.size)
+    }
+
+    @Test
+    fun tomateTieneCuatroEtapasYLechugaTres() {
+        val porCultivo = CatalogoInicial.etapas.groupBy { it.cultivoId }
+        assertEquals(4, porCultivo["cultivo-tomate"]?.size)
+        assertEquals(3, porCultivo["cultivo-lechuga"]?.size)
+    }
+
+    // La suma de cada nutriente en las etapas de un cultivo tiene que dar 100 %
+    @Test
+    fun porcentajesDeCadaCultivoSuman100() {
+        CatalogoInicial.etapas.groupBy { it.cultivoId }.forEach { (cultivo, etapas) ->
+            assertEquals("N de $cultivo", 100.0, etapas.sumOf { it.pctN }, 0.001)
+            assertEquals("P2O5 de $cultivo", 100.0, etapas.sumOf { it.pctP2o5 }, 0.001)
+            assertEquals("K2O de $cultivo", 100.0, etapas.sumOf { it.pctK2o }, 0.001)
+            assertEquals("CaO de $cultivo", 100.0, etapas.sumOf { it.pctCao }, 0.001)
+            assertEquals("MgO de $cultivo", 100.0, etapas.sumOf { it.pctMgo }, 0.001)
+        }
+    }
 }
