@@ -123,6 +123,11 @@ fun AppNavigation(navController: NavHostController) {
                 onVerAnalisis = { sectorId ->
                     navController.navigate("analisis/$sectorId")
                 },
+                onCrearPlan = { sector ->
+                    // El plan parte con el cultivo y las hectáreas del sector
+                    planViewModel.usarSector(sector.cultivoId, sector.hectareas)
+                    navController.navigate("plan/cultivo")
+                },
                 onVolver = {
                     navController.popBackStack()
                 }

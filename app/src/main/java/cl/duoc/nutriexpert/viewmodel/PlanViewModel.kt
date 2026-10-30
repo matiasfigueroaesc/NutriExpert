@@ -70,6 +70,13 @@ class PlanViewModel : ViewModel() {
 
     // ---------- Paso 1 · Cultivo ----------
 
+    // Llena el paso 1 con el cultivo y la superficie de un sector guardado
+    fun usarSector(cultivoId: String, hectareas: Double) {
+        cultivos.find { it.id == cultivoId }?.let { onCultivoChange(it) }
+        val texto = if (hectareas % 1.0 == 0.0) hectareas.toInt().toString() else hectareas.toString()
+        estado = estado.copy(hectareas = texto, errorHectareas = null)
+    }
+
     fun onCultivoChange(cultivo: CultivoEjemplo) {
         estado = estado.copy(
             cultivo = cultivo,
