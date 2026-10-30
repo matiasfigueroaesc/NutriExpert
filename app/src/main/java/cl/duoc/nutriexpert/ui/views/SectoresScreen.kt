@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -21,6 +22,11 @@ fun SectoresScreen(
     onVerAnalisis: (Int) -> Unit,
     onVolver: () -> Unit
 ) {
+    // Al abrir la pantalla, carga desde Room los sectores de este predio
+    LaunchedEffect(predioId) {
+        viewModel.cargarSectores(predioId)
+    }
+
     val sectores by viewModel.sectores.collectAsState()
 
     val sectoresDelPredio = sectores.filter {

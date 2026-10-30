@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -20,6 +21,11 @@ fun AnalisisScreen(
     onCrearAnalisis: () -> Unit,
     onVolver: () -> Unit
 ) {
+    // Al abrir la pantalla, carga desde Room los análisis de este sector
+    LaunchedEffect(sectorId) {
+        viewModel.cargarAnalisis(sectorId)
+    }
+
     val analisis by viewModel.analisis.collectAsState()
 
     val analisisDelSector = analisis.filter {
