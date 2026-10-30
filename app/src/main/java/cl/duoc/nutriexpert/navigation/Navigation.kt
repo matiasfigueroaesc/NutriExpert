@@ -134,11 +134,15 @@ fun AppNavigation(navController: NavHostController) {
 
             val predioId = backStackEntry.arguments?.getInt("predioId") ?: 0
 
+            val sectoresViewModel: SectoresViewModel = viewModel()
+
             CrearSectorScreen(
                 predioId = predioId,
-                onGuardar = {
-                    // Pendiente de conexión con Room.
-                    // No se navega porque aún no se guarda.
+                onGuardar = { sector ->
+                    // Guarda en Room y, si salió bien, vuelve a la lista de sectores
+                    sectoresViewModel.guardarSector(sector) { ok ->
+                        if (ok) navController.popBackStack()
+                    }
                 },
                 onVolver = {
                     navController.popBackStack()
@@ -184,11 +188,15 @@ fun AppNavigation(navController: NavHostController) {
 
             val sectorId = backStackEntry.arguments?.getInt("sectorId") ?: 0
 
+            val analisisViewModel: AnalisisViewModel = viewModel()
+
             CrearAnalisisScreen(
                 sectorId = sectorId,
-                onGuardar = {
-                    // Pendiente de conexión con Room.
-                    // No se navega porque aún no se guarda.
+                onGuardar = { analisis ->
+                    // Guarda en Room y, si salió bien, vuelve a la lista de análisis
+                    analisisViewModel.guardarAnalisis(analisis) { ok ->
+                        if (ok) navController.popBackStack()
+                    }
                 },
                 onVolver = {
                     navController.popBackStack()
