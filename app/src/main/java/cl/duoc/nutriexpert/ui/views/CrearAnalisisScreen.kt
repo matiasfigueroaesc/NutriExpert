@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -14,6 +16,8 @@ import cl.duoc.nutriexpert.data.local.AnalisisEntity
 import cl.duoc.nutriexpert.utils.ErroresAnalisis
 import cl.duoc.nutriexpert.utils.validarAnalisis
 
+// Formulario del análisis de suelo y agua. Usa la misma barra verde que "Nuevo predio".
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrearAnalisisScreen(
     sectorId: Int,
@@ -62,146 +66,158 @@ fun CrearAnalisisScreen(
     fun convertir(valor: String): Double =
         valor.trim().replace(",", ".").toDouble()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text(
-            text = "Nuevo análisis de suelo y agua",
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        OutlinedTextField(
-            value = fecha,
-            onValueChange = {
-                fecha = it
-                errores = errores.copy(fecha = null)
-            },
-            label = { Text("Fecha (AAAA-MM-DD)") },
-            isError = errores.fecha != null,
-            supportingText = {
-                errores.fecha?.let { Text(it) }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        Text(
-            "Características del suelo",
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        CampoAnalisis(
-            "Profundidad (cm)", profundidad,
-            errores.campos["profundidadCm"]
-        ) {
-            profundidad = it
-        }
-
-        CampoAnalisis(
-            "Densidad aparente", densidad,
-            errores.campos["densidadAparente"]
-        ) {
-            densidad = it
-        }
-
-        CampoAnalisis(
-            "Pedregosidad (%)", pedregosidad,
-            errores.campos["pedregosidadPct"]
-        ) {
-            pedregosidad = it
-        }
-
-        Text(
-            "Nutrientes del suelo (ppm)",
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        CampoAnalisis("Nitrógeno (N)", sueloN, errores.campos["sueloN"]) {
-            sueloN = it
-        }
-        CampoAnalisis("Fósforo (P)", sueloP, errores.campos["sueloP"]) {
-            sueloP = it
-        }
-        CampoAnalisis("Potasio (K)", sueloK, errores.campos["sueloK"]) {
-            sueloK = it
-        }
-        CampoAnalisis("Calcio (Ca)", sueloCa, errores.campos["sueloCa"]) {
-            sueloCa = it
-        }
-        CampoAnalisis("Magnesio (Mg)", sueloMg, errores.campos["sueloMg"]) {
-            sueloMg = it
-        }
-
-        Text(
-            "Nutrientes del agua (mg/L)",
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        CampoAnalisis("Nitrógeno (N)", aguaN, errores.campos["aguaN"]) {
-            aguaN = it
-        }
-        CampoAnalisis("Fósforo (P)", aguaP, errores.campos["aguaP"]) {
-            aguaP = it
-        }
-        CampoAnalisis("Potasio (K)", aguaK, errores.campos["aguaK"]) {
-            aguaK = it
-        }
-        CampoAnalisis("Calcio (Ca)", aguaCa, errores.campos["aguaCa"]) {
-            aguaCa = it
-        }
-        CampoAnalisis("Magnesio (Mg)", aguaMg, errores.campos["aguaMg"]) {
-            aguaMg = it
-        }
-        CampoAnalisis("Agua aplicada (m³/ha)", aguaM3Ha, errores.campos["aguaM3Ha"]) {
-            aguaM3Ha = it
-        }
-
-        Button(
-            onClick = {
-                val resultado = validarAnalisis(
-                    fecha = fecha,
-                    valores = valores
-                )
-
-                errores = resultado
-
-                if (!resultado.hayErrores()) {
-                    onGuardar(
-                        AnalisisEntity(
-                            sectorId = sectorId,
-                            fecha = fecha,
-                            profundidadCm = convertir(profundidad),
-                            densidadAparente = convertir(densidad),
-                            pedregosidadPct = convertir(pedregosidad),
-                            sueloN = convertir(sueloN),
-                            sueloP = convertir(sueloP),
-                            sueloK = convertir(sueloK),
-                            sueloCa = convertir(sueloCa),
-                            sueloMg = convertir(sueloMg),
-                            aguaN = convertir(aguaN),
-                            aguaP = convertir(aguaP),
-                            aguaK = convertir(aguaK),
-                            aguaCa = convertir(aguaCa),
-                            aguaMg = convertir(aguaMg),
-                            aguaM3Ha = convertir(aguaM3Ha)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Nuevo análisis") },
+                navigationIcon = {
+                    // Flecha atrás en vez del botón "Volver" de abajo
+                    IconButton(onClick = onVolver) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver"
                         )
-                    )
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Guardar análisis")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
         }
-
-        OutlinedButton(
-            onClick = onVolver,
-            modifier = Modifier.fillMaxWidth()
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Volver")
+
+            OutlinedTextField(
+                value = fecha,
+                onValueChange = {
+                    fecha = it
+                    errores = errores.copy(fecha = null)
+                },
+                label = { Text("Fecha (AAAA-MM-DD)") },
+                isError = errores.fecha != null,
+                supportingText = {
+                    errores.fecha?.let { Text(it) }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Text(
+                "Características del suelo",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            CampoAnalisis(
+                "Profundidad (cm)", profundidad,
+                errores.campos["profundidadCm"]
+            ) {
+                profundidad = it
+            }
+
+            CampoAnalisis(
+                "Densidad aparente", densidad,
+                errores.campos["densidadAparente"]
+            ) {
+                densidad = it
+            }
+
+            CampoAnalisis(
+                "Pedregosidad (%)", pedregosidad,
+                errores.campos["pedregosidadPct"]
+            ) {
+                pedregosidad = it
+            }
+
+            Text(
+                "Nutrientes del suelo (ppm)",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            CampoAnalisis("Nitrógeno (N)", sueloN, errores.campos["sueloN"]) {
+                sueloN = it
+            }
+            CampoAnalisis("Fósforo (P)", sueloP, errores.campos["sueloP"]) {
+                sueloP = it
+            }
+            CampoAnalisis("Potasio (K)", sueloK, errores.campos["sueloK"]) {
+                sueloK = it
+            }
+            CampoAnalisis("Calcio (Ca)", sueloCa, errores.campos["sueloCa"]) {
+                sueloCa = it
+            }
+            CampoAnalisis("Magnesio (Mg)", sueloMg, errores.campos["sueloMg"]) {
+                sueloMg = it
+            }
+
+            Text(
+                "Nutrientes del agua (mg/L)",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            CampoAnalisis("Nitrógeno (N)", aguaN, errores.campos["aguaN"]) {
+                aguaN = it
+            }
+            CampoAnalisis("Fósforo (P)", aguaP, errores.campos["aguaP"]) {
+                aguaP = it
+            }
+            CampoAnalisis("Potasio (K)", aguaK, errores.campos["aguaK"]) {
+                aguaK = it
+            }
+            CampoAnalisis("Calcio (Ca)", aguaCa, errores.campos["aguaCa"]) {
+                aguaCa = it
+            }
+            CampoAnalisis("Magnesio (Mg)", aguaMg, errores.campos["aguaMg"]) {
+                aguaMg = it
+            }
+            CampoAnalisis("Agua aplicada (m³/ha)", aguaM3Ha, errores.campos["aguaM3Ha"]) {
+                aguaM3Ha = it
+            }
+
+            Button(
+                onClick = {
+                    val resultado = validarAnalisis(
+                        fecha = fecha,
+                        valores = valores
+                    )
+
+                    errores = resultado
+
+                    if (!resultado.hayErrores()) {
+                        onGuardar(
+                            AnalisisEntity(
+                                sectorId = sectorId,
+                                fecha = fecha,
+                                profundidadCm = convertir(profundidad),
+                                densidadAparente = convertir(densidad),
+                                pedregosidadPct = convertir(pedregosidad),
+                                sueloN = convertir(sueloN),
+                                sueloP = convertir(sueloP),
+                                sueloK = convertir(sueloK),
+                                sueloCa = convertir(sueloCa),
+                                sueloMg = convertir(sueloMg),
+                                aguaN = convertir(aguaN),
+                                aguaP = convertir(aguaP),
+                                aguaK = convertir(aguaK),
+                                aguaCa = convertir(aguaCa),
+                                aguaMg = convertir(aguaMg),
+                                aguaM3Ha = convertir(aguaM3Ha)
+                            )
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Guardar análisis")
+            }
         }
     }
 }
