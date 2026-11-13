@@ -1,19 +1,26 @@
-
 package cl.duoc.nutriexpert.ui.views
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cl.duoc.nutriexpert.data.local.SectorEntity
 import cl.duoc.nutriexpert.viewmodel.SectoresViewModel
 
+// Lista de sectores de un predio. Usa la misma barra verde y botón flotante que "Mis predios".
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SectoresScreen(
     predioId: Int,
@@ -34,69 +41,91 @@ fun SectoresScreen(
         it.predioId == predioId
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-
-        Text(
-            text = "Sectores del predio",
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        Button(
-            onClick = onCrearSector,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Nuevo sector")
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Sectores del predio") },
+                navigationIcon = {
+                    // Flecha atrás en vez del botón "Volver" de abajo
+                    IconButton(onClick = onVolver) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = onCrearSector,
+                icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                text = { Text("Nuevo sector") },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            )
         }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp)
+        ) {
+            Spacer(modifier = Modifier.height(12.dp))
 
-        if (sectoresDelPredio.isEmpty()) {
+            // Resumen: cantidad de sectores y superficie total
+            val totalHectareas = sectoresDelPredio.sumOf { it.hectareas }
+            Text(
+                text = "${sectoresDelPredio.size} sector(es) · ${"%.1f".format(totalHectareas)} ha",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.secondary
+            )
 
-            Text("Este predio todavía no tiene sectores.")
-
-        } else {
-
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(
-                    items = sectoresDelPredio,
-                    key = { it.id }
-                ) { sector ->
-
-                    SectorCard(
-                        sector = sector,
-                        onVerAnalisis = {
-                            onVerAnalisis(sector.id)
-                        },
-                        onCrearPlan = {
-                            onCrearPlan(sector)
-                        }
-                    )
+            if (sectoresDelPredio.isEmpty()) {
+                Text(
+                    text = "Este predio todavía no tiene sectores. Toca \"Nuevo sector\" para agregar el primero.",
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(top = 32.dp)
+                )
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    // Espacio abajo para que el botón flotante no tape la última tarjeta
+                    contentPadding = PaddingValues(top = 12.dp, bottom = 88.dp)
+                ) {
+                    items(
+                        items = sectoresDelPredio,
+                        key = { it.id }
+                    ) { sector ->
+                        SectorCard(
+                            sector = sector,
+                            onVerAnalisis = {
+                                onVerAnalisis(sector.id)
+                            },
+                            onCrearPlan = {
+                                onCrearPlan(sector)
+                            }
+                        )
+                    }
                 }
             }
-        }
-
-        OutlinedButton(
-            onClick = onVolver,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Volver")
         }
     }
 }
 
+// Tarjeta de un sector, con los mismos colores que la tarjeta de un predio
 @Composable
 private fun SectorCard(
     sector: SectorEntity,
     onVerAnalisis: () -> Unit,
     onCrearPlan: () -> Unit
 ) {
-
     val nombreCultivo = when (sector.cultivoId) {
         "cultivo-tomate" -> "Tomate"
         "cultivo-lechuga" -> "Lechuga"
@@ -104,21 +133,37 @@ private fun SectorCard(
     }
 
     Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-
-            Text(
-                text = sector.nombre,
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Text("Cultivo: $nombreCultivo")
-
-            Text("Superficie: ${sector.hectareas} ha")
+            // Nombre y cultivo a la izquierda, hectáreas a la derecha
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = sector.nombre,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        text = "Cultivo: $nombreCultivo",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+                Text(
+                    text = "${"%.1f".format(sector.hectareas)} ha",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
 
             Button(
                 onClick = onCrearPlan,
