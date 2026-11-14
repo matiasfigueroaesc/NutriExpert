@@ -81,9 +81,10 @@ fun PrediosScreen(
                 acciones = {
                     IconButton(
                         onClick = {
-                            // El Login se sacó de la pila al ingresar, así que volvemos navegando a "login"
+                            // Borra la sesión y vuelve al login sin dejar nada en la pila
+                            viewModel.cerrarSesion()
                             navController.navigate("login") {
-                                popUpTo("predios") { inclusive = true }
+                                popUpTo(navController.graph.id) { inclusive = true }
                             }
                         }
                     ) {
@@ -112,6 +113,16 @@ fun PrediosScreen(
                 .padding(horizontal = 16.dp)
         ) {
             Spacer(modifier = Modifier.height(12.dp))
+
+            // Saludo con el nombre del usuario que inició sesión
+            if (viewModel.nombreUsuario.isNotBlank()) {
+                Text(
+                    text = "Hola, ${viewModel.nombreUsuario}",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
 
             // Resumen: cantidad de predios y superficie total
             val totalHectareas = predios.sumOf { it.hectareas }

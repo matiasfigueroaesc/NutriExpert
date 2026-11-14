@@ -1,8 +1,8 @@
 package cl.duoc.nutriexpert.viewmodel
 
 import android.app.Application
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,6 +10,7 @@ import cl.duoc.nutriexpert.data.local.AppDatabase
 import cl.duoc.nutriexpert.data.local.PredioEntity
 import cl.duoc.nutriexpert.data.repository.PredioRepository
 import cl.duoc.nutriexpert.nativo.FotoHelper
+import cl.duoc.nutriexpert.seguridad.SesionManager
 import cl.duoc.nutriexpert.utils.ErroresPredio
 import cl.duoc.nutriexpert.utils.validarPredio
 import kotlinx.coroutines.launch
@@ -31,8 +32,10 @@ data class PredioFormState(
 // La pantalla muestra "estado" y avisa cada cambio; la validación está en Validaciones.kt.
 class PredioFormViewModel(application: Application) : AndroidViewModel(application) {
 
+    // Trabaja solo con los predios del usuario que inició sesión
     private val repository = PredioRepository(
-        AppDatabase.obtener(application).predioDao()
+        AppDatabase.obtener(application).predioDao(),
+        SesionManager(application).usuarioId() ?: 0
     )
 
     var estado by mutableStateOf(PredioFormState())

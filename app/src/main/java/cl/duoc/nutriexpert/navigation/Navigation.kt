@@ -4,6 +4,8 @@ package cl.duoc.nutriexpert.navigation
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -28,6 +30,7 @@ import cl.duoc.nutriexpert.ui.views.CrearAnalisisScreen
 import cl.duoc.nutriexpert.viewmodel.SectoresViewModel
 import cl.duoc.nutriexpert.viewmodel.AnalisisViewModel
 import cl.duoc.nutriexpert.viewmodel.PlanViewModel
+import cl.duoc.nutriexpert.seguridad.SesionManager
 
 private const val DURACION_TRANSICION = 300
 
@@ -36,9 +39,14 @@ fun AppNavigation(navController: NavHostController) {
     // Un solo ViewModel para los 4 pasos del asistente, así no se pierde lo elegido
     val planViewModel: PlanViewModel = viewModel()
 
+    // Si ya hay una sesión guardada se entra directo a "Mis predios";
+    // si no, se parte en el login. Sin sesión no se llega a ninguna otra pantalla.
+    val context = LocalContext.current
+    val inicio = remember { if (SesionManager(context).haySesion()) "predios" else "login" }
+
     NavHost(
         navController = navController,
-        startDestination = "login",
+        startDestination = inicio,
         enterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
