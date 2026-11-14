@@ -206,9 +206,9 @@ fun validarSector(
         hectareas = when {
             hectareas.isBlank() -> "Ingresa la superficie"
             superficie == null || !superficie.isFinite() ->
-                "Ingresa una superficie válida"
+                "Usa solo números, ej: 7,5"
             superficie <= 0.0 ->
-                "La superficie debe ser mayor a cero"
+                "La superficie debe ser mayor a 0"
             else -> null
         }
     )
