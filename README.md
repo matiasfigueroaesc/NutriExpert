@@ -14,7 +14,9 @@ La app es **offline-first**: todo funciona sin internet y los datos se guardan e
 
 ## Funcionalidades (etapa 1)
 
-- **Cuenta de usuario:** inicio de sesión, creación de cuenta y recuperación de contraseña.
+- **Cuenta de usuario:** creación de cuenta e inicio de sesión reales (guardados en el teléfono), cierre de sesión y recuperación de contraseña (requiere servidor).
+- **Sectores y análisis:** cada predio se divide en sectores con su cultivo, y cada sector guarda sus análisis de suelo y agua.
+- **Plan nutricional:** asistente de 4 pasos para calcular los fertilizantes de un sector.
 - **Predios:** crear, listar y editar predios agrícolas.
   - **Ubicación GPS:** botón "Usar mi ubicación" que guarda la latitud y longitud del predio.
   - **Foto del predio:** tomar una foto con la cámara o elegirla de la galería, con vista previa.
@@ -34,6 +36,19 @@ La app es **offline-first**: todo funciona sin internet y los datos se guardan e
 | Galería | No requiere permiso (Photo Picker de Android) | Elegir una foto existente |
 
 Los permisos se piden en tiempo de ejecución, solo cuando el usuario toca el botón correspondiente. Si los rechaza, la app explica por qué los necesita y ofrece abrir los Ajustes.
+
+## Seguridad y autenticación
+
+La app funciona sin internet, así que las cuentas se guardan en el teléfono (Room):
+
+- **Contraseñas con hash:** nunca se guarda la contraseña. Se guarda un hash PBKDF2 con sal aleatoria por usuario y 100.000 iteraciones (`seguridad/Contrasenas.kt`). La verificación compara en tiempo constante.
+- **Contraseñas exigentes:** mínimo 8 caracteres, con letras y números.
+- **Sesión:** se guarda solo el id del usuario en preferencias privadas (`seguridad/SesionManager.kt`). Si hay sesión, la app abre directo en "Mis predios"; al cerrar sesión se limpia la pila de pantallas.
+- **Datos separados por usuario:** cada predio tiene dueño (`usuarioId`) y todas las consultas filtran por él, así un usuario no ve ni borra predios de otro.
+- **Bloqueo por intentos:** tras 5 intentos fallidos el login se bloquea 30 segundos. El mensaje de error no revela si el correo existe.
+- **Sin copias de seguridad:** la base de datos y la sesión se excluyen de las copias en la nube y del traspaso a otro teléfono.
+
+> **API / backend:** todavía no está conectada (no hay Retrofit ni permiso de internet). `AuthRepository` y los repositorios son el punto donde se agregará la llamada a la API sin cambiar pantallas ni ViewModels.
 
 ## Tecnologías
 
@@ -64,10 +79,14 @@ Los permisos se piden en tiempo de ejecución, solo cuando el usuario toca el bo
 ```
 app/src/main/java/cl/duoc/nutriexpert/
 ├── data/          # Entidades, DAOs, base de datos Room y repositorios
+├── domain/        # Modelos y motor de cálculo del plan nutricional
 ├── nativo/        # Ayudantes de GPS (UbicacionHelper) y cámara/galería (FotoHelper)
+├── seguridad/     # Hash de contraseñas y sesión del usuario
 ├── ui/
-│   ├── components/  # Componentes reutilizables (campos con ícono, ubicación, foto)
+│   ├── components/  # Componentes reutilizables (barra superior, botones, campos, ubicación, foto)
+│   ├── plan/        # Asistente del plan nutricional
 │   └── views/       # Pantallas de la app
+├── utils/         # Validaciones de formularios
 └── viewmodel/     # ViewModels
 ```
 
