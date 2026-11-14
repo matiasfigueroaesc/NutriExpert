@@ -22,6 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -33,10 +34,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import cl.duoc.nutriexpert.ui.components.AnimacionExito
 import cl.duoc.nutriexpert.ui.components.BarraSuperior
 import cl.duoc.nutriexpert.ui.components.BotonPrincipal
 import cl.duoc.nutriexpert.ui.components.CampoFormulario
 import cl.duoc.nutriexpert.viewmodel.RegistroViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun RegistroScreen(navController: NavHostController) {
@@ -47,6 +50,25 @@ fun RegistroScreen(navController: NavHostController) {
 
     // Controla la ventana de privacidad
     var mostrarPolitica by remember { mutableStateOf(false) }
+
+    // Cuenta creada: la sesión ya quedó iniciada, se muestra la animación y se entra a la app
+    LaunchedEffect(estado.registroCorrecto) {
+        if (estado.registroCorrecto) {
+            delay(1500)
+            navController.navigate("predios") {
+                // Saca Login y Registro de la pila: "atrás" ya no vuelve a ellos
+                popUpTo("login") { inclusive = true }
+            }
+        }
+    }
+
+    if (estado.registroCorrecto) {
+        AnimacionExito(
+            mensaje = "¡Cuenta creada!",
+            modifier = Modifier.fillMaxSize()
+        )
+        return
+    }
 
     Scaffold(
         topBar = {
@@ -102,6 +124,18 @@ fun RegistroScreen(navController: NavHostController) {
                 esContrasena = true
             )
 
+            // Ayuda visible antes de equivocarse
+            if (estado.errores.contrasena.isEmpty()) {
+                Text(
+                    text = "Mínimo 8 caracteres, con letras y números.",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp)
+                )
+            }
+
             CampoFormulario(
                 valor = estado.confirmarContrasena,
                 onValorChange = registroViewModel::onConfirmarContrasenaChange,
@@ -154,18 +188,10 @@ fun RegistroScreen(navController: NavHostController) {
                 )
             }
 
-            // Mensaje cuando el formulario es válido
-            if (estado.mensajeInformativo.isNotEmpty()) {
-                Text(
-                    text = estado.mensajeInformativo,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
             BotonPrincipal(
-                texto = "Crear cuenta",
-                onClick = { registroViewModel.registrar() }
+                texto = if (estado.cargando) "Creando cuenta…" else "Crear cuenta",
+                onClick = { registroViewModel.registrar() },
+                cargando = estado.cargando
             )
         }
     }
@@ -189,27 +215,27 @@ fun RegistroScreen(navController: NavHostController) {
 
                             1. INFORMACIÓN SOLICITADA
 
-                            Para crear una cuenta se solicitará nombre, correo electrónico y contraseña.
+                            Para crear una cuenta se solicita nombre, correo electrónico y contraseña.
 
-                            La aplicación también podrá gestionar información de predios, cultivos y actividades agrícolas.
+                            La aplicación también gestiona información de predios, cultivos y actividades agrícolas.
 
                             2. USO DE LA INFORMACIÓN
 
-                            Los datos se utilizarán para identificar al usuario y organizar la información registrada en la aplicación.
+                            Los datos se utilizan para identificar al usuario y organizar la información registrada en la aplicación.
 
                             3. PROTECCIÓN DE DATOS
 
-                            El proyecto contempla implementar autenticación y separación de los datos entre usuarios. Estas funciones aún están en desarrollo.
+                            La contraseña nunca se guarda: solo se almacena una huella cifrada (hash) que no permite recuperarla. Cada usuario ve únicamente sus propios predios. Los datos se guardan solo en este teléfono y no se incluyen en las copias de seguridad.
 
                             4. FUNCIONAMIENTO SIN CONEXIÓN
 
-                            Se contempla que los usuarios previamente autenticados puedan utilizar determinadas funciones sin internet mediante almacenamiento local.
+                            La cuenta y los datos se guardan en el teléfono, por lo que la aplicación funciona sin internet.
 
                             5. ALCANCE
 
-                            Esta política es ficticia y se utiliza únicamente para demostrar el prototipo académico. No es una política definitiva ni confirma que todas las funciones estén implementadas.
+                            Esta política es ficticia y se utiliza únicamente para demostrar el prototipo académico. No es una política definitiva.
 
-                            Última actualización: octubre de 2026.
+                            Última actualización: noviembre de 2026.
                         """.trimIndent()
                     )
                 }

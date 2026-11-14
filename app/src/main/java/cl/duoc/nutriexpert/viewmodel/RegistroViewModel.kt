@@ -1,12 +1,19 @@
 
 package cl.duoc.nutriexpert.viewmodel
 
-import androidx.compose.runtime.getValue
+import android.app.Application
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import cl.duoc.nutriexpert.data.local.AppDatabase
+import cl.duoc.nutriexpert.data.repository.AuthRepository
+import cl.duoc.nutriexpert.data.repository.ResultadoAuth
+import cl.duoc.nutriexpert.seguridad.SesionManager
 import cl.duoc.nutriexpert.utils.ErroresRegistro
 import cl.duoc.nutriexpert.utils.validarCamposRegistro
+import kotlinx.coroutines.launch
 
 // Guarda los datos y el resultado del formulario de registro
 data class RegistroState(
@@ -17,11 +24,17 @@ data class RegistroState(
     val aceptaPrivacidad: Boolean = false,
     val errores: ErroresRegistro = ErroresRegistro(),
     val mensajeError: String = "",
-    val mensajeInformativo: String = ""
+    val cargando: Boolean = false,       // true mientras se crea la cuenta
+    val registroCorrecto: Boolean = false
 )
 
 // Administra los datos y las acciones del registro
-class RegistroViewModel : ViewModel() {
+class RegistroViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val authRepository = AuthRepository(
+        AppDatabase.obtener(application).usuarioDao(),
+        SesionManager(application)
+    )
 
     var estado by mutableStateOf(RegistroState())
         private set
@@ -30,8 +43,7 @@ class RegistroViewModel : ViewModel() {
         estado = estado.copy(
             nombre = valor,
             errores = estado.errores.copy(nombre = ""),
-            mensajeError = "",
-            mensajeInformativo = ""
+            mensajeError = ""
         )
     }
 
@@ -39,8 +51,7 @@ class RegistroViewModel : ViewModel() {
         estado = estado.copy(
             correo = valor,
             errores = estado.errores.copy(correo = ""),
-            mensajeError = "",
-            mensajeInformativo = ""
+            mensajeError = ""
         )
     }
 
@@ -51,8 +62,7 @@ class RegistroViewModel : ViewModel() {
                 contrasena = "",
                 confirmarContrasena = ""
             ),
-            mensajeError = "",
-            mensajeInformativo = ""
+            mensajeError = ""
         )
     }
 
@@ -60,8 +70,7 @@ class RegistroViewModel : ViewModel() {
         estado = estado.copy(
             confirmarContrasena = valor,
             errores = estado.errores.copy(confirmarContrasena = ""),
-            mensajeError = "",
-            mensajeInformativo = ""
+            mensajeError = ""
         )
     }
 
@@ -69,13 +78,13 @@ class RegistroViewModel : ViewModel() {
         estado = estado.copy(
             aceptaPrivacidad = valor,
             errores = estado.errores.copy(privacidad = ""),
-            mensajeError = "",
-            mensajeInformativo = ""
+            mensajeError = ""
         )
     }
 
-    // Valida cada campo del formulario por separado
+    // Valida cada campo por separado y, si todo está bien, crea la cuenta
     fun registrar() {
+        if (estado.cargando) return
 
         val erroresFormulario = validarCamposRegistro(
             nombre = estado.nombre,
@@ -86,20 +95,31 @@ class RegistroViewModel : ViewModel() {
         )
 
         if (erroresFormulario.hayErrores()) {
-            estado = estado.copy(
-                errores = erroresFormulario,
-                mensajeError = "",
-                mensajeInformativo = ""
-            )
+            estado = estado.copy(errores = erroresFormulario, mensajeError = "")
             return
         }
 
-        // El backend de registro todavía no está implementado
-        estado = estado.copy(
-            errores = ErroresRegistro(),
-            mensajeError = "",
-            mensajeInformativo =
-                "Formulario válido. El registro aún no está disponible."
-        )
+        estado = estado.copy(errores = ErroresRegistro(), mensajeError = "", cargando = true)
+
+        viewModelScope.launch {
+            val resultado = authRepository.registrar(
+                nombre = estado.nombre,
+                correo = estado.correo,
+                contrasena = estado.contrasena
+            )
+            estado = when (resultado) {
+                is ResultadoAuth.Exito -> estado.copy(
+                    contrasena = "",
+                    confirmarContrasena = "",
+                    cargando = false,
+                    registroCorrecto = true
+                )
+                // El correo ya existe: el error se muestra en el campo correo
+                is ResultadoAuth.Error -> estado.copy(
+                    errores = estado.errores.copy(correo = resultado.mensaje),
+                    cargando = false
+                )
+            }
+        }
     }
 }

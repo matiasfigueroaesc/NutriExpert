@@ -100,10 +100,10 @@ fun validarCamposRegistro(
 ): ErroresRegistro {
 
     return ErroresRegistro(
-        nombre = if (nombre.isBlank()) {
-            "Ingresa tu nombre"
-        } else {
-            ""
+        nombre = when {
+            nombre.isBlank() -> "Ingresa tu nombre"
+            nombre.trim().length < 2 -> "El nombre debe tener al menos 2 caracteres"
+            else -> ""
         },
 
         correo = when {
@@ -117,6 +117,8 @@ fun validarCamposRegistro(
             contrasena.isBlank() -> "Ingresa tu contraseña"
             contrasena.length < 8 ->
                 "La contraseña debe tener al menos 8 caracteres"
+            !contrasena.any { it.isLetter() } || !contrasena.any { it.isDigit() } ->
+                "La contraseña debe tener letras y números"
             else -> ""
         },
 
@@ -277,6 +279,7 @@ fun validarAnalisis(
         campos = errores
     )
 }
+
 
 // Comprueba una fecha AAAA-MM-DD que exista de verdad (rechaza 2026-02-30).
 // Se usa SimpleDateFormat estricto porque java.time recién existe desde Android 8

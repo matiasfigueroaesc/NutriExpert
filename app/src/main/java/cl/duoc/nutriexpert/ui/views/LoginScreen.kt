@@ -146,8 +146,7 @@ fun LoginScreen(navController: NavHostController) {
             esContrasena = true
         )
 
-        // Mensaje general del formulario
-        // Pendiente: conectar autenticación real
+        // Mensaje general: correo o contraseña incorrectos, o bloqueo por intentos
         if (estado.mensajeError.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -175,8 +174,9 @@ fun LoginScreen(navController: NavHostController) {
 
         // Botón de ingresar
         BotonPrincipal(
-            texto = "Ingresar",
-            onClick = { loginViewModel.ingresar() }
+            texto = if (estado.cargando) "Ingresando…" else "Ingresar",
+            onClick = { loginViewModel.ingresar() },
+            cargando = estado.cargando
         )
 
         Spacer(modifier = Modifier.height(12.dp))
