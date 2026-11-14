@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -21,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -40,6 +41,75 @@ private val RegistroVerdeOscuro = Color(0xFF073D24)
 private val RegistroVerdeNatural = Color(0xFF17542F)
 private val RegistroVerdeClaro = Color(0xFF8BBE45)
 private val RegistroMarfil = Color(0xFFFFFBF4)
+
+@Composable
+private fun IconoCrearUsuario(
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier.size(24.dp)) {
+        val w = size.width
+        val h = size.height
+        val grosor = 2.dp.toPx()
+
+        // Cabeza del usuario
+        drawCircle(
+            color = Color.White,
+            radius = w * 0.14f,
+            center = androidx.compose.ui.geometry.Offset(
+                w * 0.35f,
+                h * 0.28f
+            ),
+            style = Stroke(width = grosor)
+        )
+
+        // Hombros del usuario
+        val hombros = Path().apply {
+            moveTo(w * 0.10f, h * 0.80f)
+            quadraticBezierTo(
+                w * 0.10f, h * 0.52f,
+                w * 0.35f, h * 0.52f
+            )
+            quadraticBezierTo(
+                w * 0.56f, h * 0.52f,
+                w * 0.59f, h * 0.72f
+            )
+        }
+
+        drawPath(
+            path = hombros,
+            color = Color.White,
+            style = Stroke(
+                width = grosor,
+                cap = StrokeCap.Round
+            )
+        )
+
+        // Símbolo +
+        drawLine(
+            color = Color.White,
+            start = androidx.compose.ui.geometry.Offset(
+                w * 0.76f, h * 0.26f
+            ),
+            end = androidx.compose.ui.geometry.Offset(
+                w * 0.76f, h * 0.66f
+            ),
+            strokeWidth = grosor,
+            cap = StrokeCap.Round
+        )
+
+        drawLine(
+            color = Color.White,
+            start = androidx.compose.ui.geometry.Offset(
+                w * 0.57f, h * 0.46f
+            ),
+            end = androidx.compose.ui.geometry.Offset(
+                w * 0.95f, h * 0.46f
+            ),
+            strokeWidth = grosor,
+            cap = StrokeCap.Round
+        )
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,9 +162,9 @@ fun RegistroScreen(navController: NavHostController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // LOGO OFICIAL MÁS COMPACTO
             Spacer(Modifier.height(8.dp))
 
+            // LOGO OFICIAL
             Image(
                 painter = painterResource(
                     id = R.drawable.logo_nutriexpert
@@ -108,7 +178,7 @@ fun RegistroScreen(navController: NavHostController) {
 
             Spacer(Modifier.height(3.dp))
 
-            // SEPARADOR DECORATIVO
+            // SEPARADOR
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -135,7 +205,7 @@ fun RegistroScreen(navController: NavHostController) {
 
             Spacer(Modifier.height(7.dp))
 
-            // TÍTULO DEGRADADO
+            // TÍTULO
             Text(
                 text = "Crea tu cuenta",
                 fontSize = 26.sp,
@@ -174,7 +244,6 @@ fun RegistroScreen(navController: NavHostController) {
                 verticalArrangement = Arrangement.spacedBy(7.dp)
             ) {
 
-                // NOMBRE
                 CampoFormulario(
                     valor = estado.nombre,
                     onValorChange = registroViewModel::onNombreChange,
@@ -183,7 +252,6 @@ fun RegistroScreen(navController: NavHostController) {
                     icono = Icons.Filled.Person
                 )
 
-                // CORREO ELECTRÓNICO
                 CampoFormulario(
                     valor = estado.correo,
                     onValorChange = registroViewModel::onCorreoChange,
@@ -193,7 +261,6 @@ fun RegistroScreen(navController: NavHostController) {
                     tipoTeclado = KeyboardType.Email
                 )
 
-                // CONTRASEÑA
                 CampoFormulario(
                     valor = estado.contrasena,
                     onValorChange = registroViewModel::onContrasenaChange,
@@ -203,7 +270,6 @@ fun RegistroScreen(navController: NavHostController) {
                     esContrasena = true
                 )
 
-                // CONFIRMAR CONTRASEÑA
                 CampoFormulario(
                     valor = estado.confirmarContrasena,
                     onValorChange = registroViewModel::onConfirmarContrasenaChange,
@@ -213,7 +279,7 @@ fun RegistroScreen(navController: NavHostController) {
                     esContrasena = true
                 )
 
-                // ACEPTACIÓN DE PRIVACIDAD
+                // POLÍTICA DE PRIVACIDAD
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -236,7 +302,6 @@ fun RegistroScreen(navController: NavHostController) {
                     )
                 }
 
-                // ERROR DE PRIVACIDAD
                 if (estado.errores.privacidad.isNotEmpty()) {
                     Text(
                         text = estado.errores.privacidad,
@@ -246,7 +311,6 @@ fun RegistroScreen(navController: NavHostController) {
                     )
                 }
 
-                // ENLACE A LA POLÍTICA
                 TextButton(
                     onClick = {
                         mostrarPolitica = true
@@ -268,7 +332,6 @@ fun RegistroScreen(navController: NavHostController) {
                     )
                 }
 
-                // ERROR GENERAL
                 if (estado.mensajeError.isNotEmpty()) {
                     Text(
                         text = estado.mensajeError,
@@ -277,7 +340,6 @@ fun RegistroScreen(navController: NavHostController) {
                     )
                 }
 
-                // MENSAJE INFORMATIVO
                 if (estado.mensajeInformativo.isNotEmpty()) {
                     Text(
                         text = estado.mensajeInformativo,
@@ -288,7 +350,7 @@ fun RegistroScreen(navController: NavHostController) {
 
                 Spacer(Modifier.height(3.dp))
 
-                // BOTÓN CREAR CUENTA
+                // BOTÓN CON ÍCONO DE USUARIO +
                 Button(
                     onClick = {
                         registroViewModel.registrar()
@@ -329,19 +391,15 @@ fun RegistroScreen(navController: NavHostController) {
 
                             Spacer(Modifier.width(10.dp))
 
-                            Icon(
-                                imageVector = Icons.Filled.ArrowForward,
-                                contentDescription = null,
-                                tint = Color.White
-                            )
+                            IconoCrearUsuario()
                         }
                     }
                 }
             }
 
-            // DECORACIÓN INFERIOR MÁS COMPACTA
             Spacer(Modifier.height(12.dp))
 
+            // ONDAS DECORATIVAS
             Canvas(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -352,14 +410,17 @@ fun RegistroScreen(navController: NavHostController) {
 
                 val ondaFondo = Path().apply {
                     moveTo(0f, h * 0.35f)
+
                     quadraticBezierTo(
                         w * 0.25f, h * 0.05f,
                         w * 0.52f, h * 0.65f
                     )
+
                     quadraticBezierTo(
                         w * 0.78f, h,
                         w, h * 0.22f
                     )
+
                     lineTo(w, h)
                     lineTo(0f, h)
                     close()
@@ -372,14 +433,17 @@ fun RegistroScreen(navController: NavHostController) {
 
                 val ondaFrontal = Path().apply {
                     moveTo(0f, h * 0.68f)
+
                     quadraticBezierTo(
                         w * 0.22f, h * 0.40f,
                         w * 0.48f, h * 0.88f
                     )
+
                     quadraticBezierTo(
                         w * 0.76f, h * 1.12f,
                         w, h * 0.50f
                     )
+
                     lineTo(w, h)
                     lineTo(0f, h)
                     close()
