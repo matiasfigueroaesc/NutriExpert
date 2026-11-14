@@ -13,29 +13,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,6 +39,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import cl.duoc.nutriexpert.R
 import cl.duoc.nutriexpert.ui.components.AnimacionExito
+import cl.duoc.nutriexpert.ui.components.BotonPrincipal
+import cl.duoc.nutriexpert.ui.components.BotonSecundario
 import cl.duoc.nutriexpert.ui.components.CampoFormulario
 import cl.duoc.nutriexpert.viewmodel.LoginViewModel
 import kotlinx.coroutines.delay
@@ -130,46 +128,26 @@ fun LoginScreen(navController: NavHostController) {
         CampoFormulario(
             valor = estado.correo,
             onValorChange = loginViewModel::onCorreoChange,
-            etiqueta = "Correo",
+            etiqueta = "Correo electrónico",
             error = estado.errores.correo,
+            icono = Icons.Filled.Email,
             tipoTeclado = KeyboardType.Email
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         // Campo de contraseña
-        OutlinedTextField(
-            value = estado.contrasena,
-            onValueChange = loginViewModel::onContrasenaChange,
-            label = { Text("Contraseña") },
-            singleLine = true,
-            isError = estado.errores.contrasena != null,
-            supportingText = {
-                estado.errores.contrasena?.let { error ->
-                    Text(
-                        text = error,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            },
-            trailingIcon = {
-                if (estado.errores.contrasena != null) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = "Error en contraseña",
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                }
-            },
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password
-            ),
-            modifier = Modifier.fillMaxWidth()
+        CampoFormulario(
+            valor = estado.contrasena,
+            onValorChange = loginViewModel::onContrasenaChange,
+            etiqueta = "Contraseña",
+            error = estado.errores.contrasena,
+            icono = Icons.Filled.Lock,
+            esContrasena = true
         )
 
         // Mensaje general del formulario
-        // Pendiente: conectar autenticación real con Spring Boot y Retrofit
+        // Pendiente: conectar autenticación real
         if (estado.mensajeError.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -196,29 +174,17 @@ fun LoginScreen(navController: NavHostController) {
         Spacer(modifier = Modifier.height(8.dp))
 
         // Botón de ingresar
-        Button(
-            onClick = {
-                loginViewModel.ingresar()
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-        ) {
-            Text("Ingresar", fontSize = 16.sp)
-        }
+        BotonPrincipal(
+            texto = "Ingresar",
+            onClick = { loginViewModel.ingresar() }
+        )
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        OutlinedButton(
-            onClick = {
-                navController.navigate("registro")
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-        ) {
-            Text("Crear cuenta", fontSize = 16.sp)
-        }
+        BotonSecundario(
+            texto = "Crear cuenta",
+            onClick = { navController.navigate("registro") }
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 

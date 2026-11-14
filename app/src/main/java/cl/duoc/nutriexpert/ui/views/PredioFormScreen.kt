@@ -4,26 +4,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Place
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -32,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import cl.duoc.nutriexpert.ui.components.BarraSuperior
+import cl.duoc.nutriexpert.ui.components.BotonPrincipal
 import cl.duoc.nutriexpert.ui.components.CampoFormulario
 import cl.duoc.nutriexpert.ui.components.FotoPredioSection
 import cl.duoc.nutriexpert.ui.components.UbicacionPredioSection
@@ -60,21 +54,9 @@ fun PredioFormScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(if (predioId == 0) "Nuevo predio" else "Editar predio") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+            BarraSuperior(
+                titulo = if (predioId == 0) "Nuevo predio" else "Editar predio",
+                onVolver = { navController.popBackStack() }
             )
         }
     ) { innerPadding ->
@@ -125,16 +107,11 @@ fun PredioFormScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Button(
-                onClick = { viewModel.guardar() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                Icon(imageVector = Icons.Filled.Check, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Guardar predio", fontSize = 16.sp)
-            }
+            BotonPrincipal(
+                texto = "Guardar predio",
+                icono = Icons.Filled.Check,
+                onClick = { viewModel.guardar() }
+            )
 
             Text(
                 text = "Se guarda en el teléfono, funciona sin conexión.",
