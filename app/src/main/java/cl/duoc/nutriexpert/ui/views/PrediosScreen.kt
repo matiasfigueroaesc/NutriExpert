@@ -30,7 +30,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,15 +37,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,10 +58,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import cl.duoc.nutriexpert.data.local.PredioEntity
 import cl.duoc.nutriexpert.nativo.FotoHelper
+import cl.duoc.nutriexpert.ui.components.BarraSuperior
+import cl.duoc.nutriexpert.ui.components.BotonPrincipal
+import cl.duoc.nutriexpert.ui.plan.formatoCorto
 import cl.duoc.nutriexpert.viewmodel.PrediosViewModel
 
 // Pantalla "Mis predios" (RF-09): lista los predios guardados en Room.
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrediosScreen(
     navController: NavHostController,
@@ -77,12 +76,12 @@ fun PrediosScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Mis predios") },
-                actions = {
-                    // El Login se sacó de la pila al ingresar, así que volvemos navegando a "login"
+            BarraSuperior(
+                titulo = "Mis predios",
+                acciones = {
                     IconButton(
                         onClick = {
+                            // El Login se sacó de la pila al ingresar, así que volvemos navegando a "login"
                             navController.navigate("login") {
                                 popUpTo("predios") { inclusive = true }
                             }
@@ -93,12 +92,7 @@ fun PrediosScreen(
                             contentDescription = "Cerrar sesión"
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                }
             )
         },
         floatingActionButton = {
@@ -122,7 +116,7 @@ fun PrediosScreen(
             // Resumen: cantidad de predios y superficie total
             val totalHectareas = predios.sumOf { it.hectareas }
             Text(
-                text = "${predios.size} predio(s) · ${"%.1f".format(totalHectareas)} ha",
+                text = "${predios.size} predio(s) · ${formatoCorto(totalHectareas)} ha",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.secondary
             )
@@ -184,7 +178,7 @@ fun PrediosScreen(
     }
 }
 
-// Tarjeta de un predio. Al tocarla se expande y muestra los botones Editar y Eliminar.
+// Tarjeta de un predio. Al tocarla se expande y muestra Ver sectores, Editar y Eliminar.
 @Composable
 fun PredioCard(
     predio: PredioEntity,
@@ -243,7 +237,7 @@ fun PredioCard(
                     )
                 }
                 Text(
-                    text = "${"%.1f".format(predio.hectareas)} ha",
+                    text = "${formatoCorto(predio.hectareas)} ha",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -264,12 +258,8 @@ fun PredioCard(
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
-                TextButton(
-                    onClick = onVerSectores,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Ver sectores")
-                }
+                Spacer(modifier = Modifier.height(8.dp))
+                BotonPrincipal(texto = "Ver sectores", onClick = onVerSectores)
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                     TextButton(onClick = onEditar) {
                         Icon(Icons.Filled.Edit, contentDescription = null)
