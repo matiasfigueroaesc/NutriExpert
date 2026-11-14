@@ -18,9 +18,11 @@ import kotlinx.coroutines.launch
         FertilizanteEntity::class,
         EtapaEntity::class,
         SectorEntity::class,
-        AnalisisEntity::class
+        AnalisisEntity::class,
+        UsuarioEntity::class
     ],
-    version = 2,
+    // 3: se agregó la tabla usuarios y el dueño (usuarioId) de cada predio
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -31,6 +33,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun etapaDao(): EtapaDao
     abstract fun sectorDao(): SectorDao
     abstract fun analisisDao(): AnalisisDao
+    abstract fun usuarioDao(): UsuarioDao
 
     companion object {
         // Una sola instancia para toda la app
