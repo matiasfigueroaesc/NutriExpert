@@ -65,7 +65,7 @@ fun LoginScreen(navController: NavHostController) {
             mostrarAnimacion = true
             delay(1500)
 
-            navController.navigate("predios") {
+            navController.navigate("inicio") {
                 popUpTo("login") {
                     inclusive = true
                 }
