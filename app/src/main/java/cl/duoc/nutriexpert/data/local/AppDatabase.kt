@@ -22,7 +22,8 @@ import kotlinx.coroutines.launch
         UsuarioEntity::class
     ],
     // 3: se agregó la tabla usuarios y el dueño (usuarioId) de cada predio
-    version = 3,
+    // 4: predios y sectores guardan remoteId, sincronizado y eliminado (sincronización con el backend)
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

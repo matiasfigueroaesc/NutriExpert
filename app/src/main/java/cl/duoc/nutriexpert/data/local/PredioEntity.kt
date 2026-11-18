@@ -21,5 +21,9 @@ data class PredioEntity(
     // Campos para los recursos nativos (los completa la parte de Fabián)
     val latitud: Double? = null,   // ubicación GPS del predio
     val longitud: Double? = null,
-    val fotoUri: String? = null    // ruta de la foto tomada con la cámara
+    val fotoUri: String? = null,   // ruta de la foto tomada con la cámara
+    // Sincronización con el microservicio predios (offline-first)
+    val remoteId: Long? = null,        // id que le puso el servidor (null = todavía no llega allá)
+    val sincronizado: Boolean = false, // false = tiene cambios que el servidor no conoce
+    val eliminado: Boolean = false     // true = se borró sin red; falta avisarle al servidor
 )
