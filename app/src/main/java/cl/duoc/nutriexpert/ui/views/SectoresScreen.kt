@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,7 +18,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -25,10 +29,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +46,7 @@ import cl.duoc.nutriexpert.data.local.SectorEntity
 import cl.duoc.nutriexpert.ui.components.BarraSuperior
 import cl.duoc.nutriexpert.ui.components.BotonPrincipal
 import cl.duoc.nutriexpert.ui.components.BotonSecundario
+import cl.duoc.nutriexpert.ui.components.PendienteSincronizar
 import cl.duoc.nutriexpert.ui.plan.formatoCorto
 import cl.duoc.nutriexpert.viewmodel.SectoresViewModel
 
@@ -50,7 +59,8 @@ fun SectoresScreen(
     onCrearSector: () -> Unit,
     onVerAnalisis: (Int) -> Unit,
     onCrearPlan: (SectorEntity) -> Unit,
-    onVolver: () -> Unit
+    onVolver: () -> Unit,
+    onEditarSector: (Int) -> Unit = {}
 ) {
     // Al abrir la pantalla, carga desde Room los sectores de este predio
     LaunchedEffect(predioId) {
@@ -59,6 +69,8 @@ fun SectoresScreen(
 
     val sectores by viewModel.sectores.collectAsState()
     val sectoresDelPredio = sectores.filter { it.predioId == predioId }
+    // Sector que el usuario quiere borrar (null = no se muestra el diálogo)
+    var sectorAEliminar by remember { mutableStateOf<SectorEntity?>(null) }
 
     Scaffold(
         topBar = { BarraSuperior(titulo = "Sectores del predio", onVolver = onVolver) },
@@ -111,11 +123,37 @@ fun SectoresScreen(
                         sector = sector,
                         onVerAnalisis = { onVerAnalisis(sector.id) },
                         onCrearPlan = { onCrearPlan(sector) },
+                        onEditar = { onEditarSector(sector.id) },
+                        onEliminar = { sectorAEliminar = sector },
                         modifier = Modifier.animateItem()
                     )
                 }
             }
         }
+    }
+
+    // Diálogo para confirmar antes de borrar (igual que en Mis predios)
+    sectorAEliminar?.let { sector ->
+        AlertDialog(
+            onDismissRequest = { sectorAEliminar = null },
+            title = { Text("Eliminar sector") },
+            text = { Text("¿Seguro que quieres eliminar \"${sector.nombre}\"?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.eliminarSector(sector) { }
+                        sectorAEliminar = null
+                    }
+                ) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { sectorAEliminar = null }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 
@@ -124,6 +162,8 @@ private fun SectorCard(
     sector: SectorEntity,
     onVerAnalisis: () -> Unit,
     onCrearPlan: () -> Unit,
+    onEditar: () -> Unit,
+    onEliminar: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val nombreCultivo = when (sector.cultivoId) {
@@ -153,6 +193,9 @@ private fun SectorCard(
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
+                    if (!sector.sincronizado) {
+                        PendienteSincronizar()
+                    }
                 }
                 Text(
                     text = "${formatoCorto(sector.hectareas)} ha",
@@ -168,6 +211,22 @@ private fun SectorCard(
                 onClick = onVerAnalisis,
                 icono = Icons.Filled.Info
             )
+            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                TextButton(onClick = onEditar) {
+                    Icon(Icons.Filled.Edit, contentDescription = null)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Editar")
+                }
+                TextButton(onClick = onEliminar) {
+                    Icon(
+                        Icons.Filled.Delete,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            }
         }
     }
 }

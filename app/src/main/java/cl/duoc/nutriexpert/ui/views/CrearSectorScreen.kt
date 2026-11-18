@@ -40,18 +40,20 @@ import cl.duoc.nutriexpert.ui.components.CampoFormulario
 import cl.duoc.nutriexpert.utils.ErroresSector
 import cl.duoc.nutriexpert.utils.validarSector
 
-// Formulario "Nuevo sector". Mismo estilo que el formulario de predio.
+// Formulario "Nuevo sector" y "Editar sector". Mismo estilo que el formulario de predio.
+// sectorInicial = null -> sector nuevo; si trae un sector, se rellenan los campos para editarlo.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrearSectorScreen(
     predioId: Int,
     onGuardar: (SectorEntity) -> Unit,
-    onVolver: () -> Unit
+    onVolver: () -> Unit,
+    sectorInicial: SectorEntity? = null
 ) {
     // rememberSaveable: lo escrito no se pierde al girar el teléfono
-    var nombre by rememberSaveable { mutableStateOf("") }
-    var hectareas by rememberSaveable { mutableStateOf("") }
-    var cultivoId by rememberSaveable { mutableStateOf("") }
+    var nombre by rememberSaveable { mutableStateOf(sectorInicial?.nombre.orEmpty()) }
+    var hectareas by rememberSaveable { mutableStateOf(sectorInicial?.hectareas?.toString().orEmpty()) }
+    var cultivoId by rememberSaveable { mutableStateOf(sectorInicial?.cultivoId.orEmpty()) }
     var menuExpandido by remember { mutableStateOf(false) }
     var errores by remember { mutableStateOf(ErroresSector()) }
 
@@ -65,7 +67,10 @@ fun CrearSectorScreen(
         ?.second.orEmpty()
 
     Scaffold(
-        topBar = { BarraSuperior(titulo = "Nuevo sector", onVolver = onVolver) }
+        topBar = { BarraSuperior(
+                titulo = if (sectorInicial == null) "Nuevo sector" else "Editar sector",
+                onVolver = onVolver
+            ) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -164,6 +169,7 @@ fun CrearSectorScreen(
 
                         onGuardar(
                             SectorEntity(
+                                id = sectorInicial?.id ?: 0, // 0 = nuevo; otro número = editar
                                 predioId = predioId,
                                 nombre = nombre.trim(),
                                 cultivoId = cultivoId,
@@ -175,7 +181,7 @@ fun CrearSectorScreen(
             )
 
             Text(
-                text = "Se guarda en el teléfono, funciona sin conexión.",
+                text = "Se guarda en el teléfono y se envía al servidor cuando hay internet.",
                 fontSize = 13.sp,
                 color = MaterialTheme.colorScheme.secondary
             )

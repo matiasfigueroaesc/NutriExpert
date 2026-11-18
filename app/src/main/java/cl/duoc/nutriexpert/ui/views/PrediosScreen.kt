@@ -60,6 +60,7 @@ import cl.duoc.nutriexpert.data.local.PredioEntity
 import cl.duoc.nutriexpert.nativo.FotoHelper
 import cl.duoc.nutriexpert.ui.components.BarraSuperior
 import cl.duoc.nutriexpert.ui.components.BotonPrincipal
+import cl.duoc.nutriexpert.ui.components.PendienteSincronizar
 import cl.duoc.nutriexpert.ui.plan.formatoCorto
 import cl.duoc.nutriexpert.viewmodel.PrediosViewModel
 
@@ -246,6 +247,10 @@ fun PredioCard(
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
+                    // Ícono cuando el servidor todavía no tiene este predio
+                    if (!predio.sincronizado) {
+                        PendienteSincronizar()
+                    }
                 }
                 Text(
                     text = "${formatoCorto(predio.hectareas)} ha",

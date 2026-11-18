@@ -4,6 +4,8 @@ package cl.duoc.nutriexpert.navigation
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -27,6 +29,7 @@ import cl.duoc.nutriexpert.ui.views.CrearSectorScreen
 import cl.duoc.nutriexpert.ui.views.AnalisisScreen
 import cl.duoc.nutriexpert.ui.views.CrearAnalisisScreen
 
+import cl.duoc.nutriexpert.data.local.SectorEntity
 import cl.duoc.nutriexpert.viewmodel.SectoresViewModel
 import cl.duoc.nutriexpert.viewmodel.AnalisisViewModel
 import cl.duoc.nutriexpert.viewmodel.PlanViewModel
@@ -138,6 +141,9 @@ fun AppNavigation(navController: NavHostController) {
                 },
                 onVolver = {
                     navController.popBackStack()
+                },
+                onEditarSector = { sectorId ->
+                    navController.navigate("editar_sector/$sectorId")
                 }
             )
         }
@@ -168,6 +174,41 @@ fun AppNavigation(navController: NavHostController) {
                     navController.popBackStack()
                 }
             )
+        }
+
+        // EDITAR SECTOR: carga el sector y abre el mismo formulario con los datos puestos
+        composable(
+            route = "editar_sector/{sectorId}",
+            arguments = listOf(
+                navArgument("sectorId") {
+                    type = NavType.IntType
+                }
+            )
+        ) { backStackEntry ->
+
+            val sectorId = backStackEntry.arguments?.getInt("sectorId") ?: 0
+
+            val sectoresViewModel: SectoresViewModel = viewModel()
+
+            // produceState: parte en null y se rellena cuando Room responde
+            val sector by produceState<SectorEntity?>(initialValue = null, sectorId) {
+                value = sectoresViewModel.obtenerSector(sectorId)
+            }
+
+            sector?.let { actual ->
+                CrearSectorScreen(
+                    predioId = actual.predioId,
+                    sectorInicial = actual,
+                    onGuardar = { editado ->
+                        sectoresViewModel.guardarSector(editado) { ok ->
+                            if (ok) navController.popBackStack()
+                        }
+                    },
+                    onVolver = {
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
 
         // ANÁLISIS DEL SECTOR
