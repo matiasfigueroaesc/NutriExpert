@@ -12,7 +12,6 @@ import io.mockk.mockk
 import io.mockk.slot
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
-import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -32,7 +31,12 @@ class PredioRepositoryTest {
 
     private val predio = PredioEntity(id = 3, usuarioId = 1, nombre = "Los Aromos", comuna = "Quillota", hectareas = 10.0)
     private fun dto(id: Long) = PredioDto(id = id, usuarioId = 1, nombre = "Los Aromos", comuna = "Quillota", superficieHa = 10.0)
-    private fun <T> error(codigo: Int): Response<T> = Response.error(codigo, "".toResponseBody(null))
+    // Respuesta de error fingida (400, 404, 500...)
+    private fun <T> error(codigo: Int): Response<T> = mockk {
+        every { isSuccessful } returns false
+        every { code() } returns codigo
+        every { body() } returns null
+    }
 
     @Before
     fun preparar() {

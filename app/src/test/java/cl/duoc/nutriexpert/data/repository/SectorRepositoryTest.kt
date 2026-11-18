@@ -13,7 +13,6 @@ import io.mockk.slot
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
-import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -30,7 +29,12 @@ class SectorRepositoryTest {
 
     private val sector = SectorEntity(id = 5, predioId = 3, nombre = "Norte", cultivoId = "cultivo-tomate", hectareas = 4.0)
     private fun dto(id: Long) = SectorDto(id = id, predioId = 50, nombre = "Norte", cultivo = "cultivo-tomate", superficieHa = 4.0)
-    private fun <T> error(codigo: Int): Response<T> = Response.error(codigo, "".toResponseBody(null))
+    // Respuesta de error fingida (400, 404, 500...)
+    private fun <T> error(codigo: Int): Response<T> = mockk {
+        every { isSuccessful } returns false
+        every { code() } returns codigo
+        every { body() } returns null
+    }
 
     @Test
     fun leer_preguntaARoom() = runTest {

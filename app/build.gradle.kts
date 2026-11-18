@@ -20,11 +20,24 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Firma del APK de entrega. El archivo nutriexpert.jks está en la carpeta app/ del repo
+    // (lo pide la pauta). Es como la firma de un documento: Android solo instala un APK firmado,
+    // y con la misma llave se pueden firmar las versiones nuevas.
+    signingConfigs {
+        create("release") {
+            storeFile = file("nutriexpert.jks")
+            storePassword = "NutriExpert2026"
+            keyAlias = "nutriexpert"
+            keyPassword = "NutriExpert2026"
+        }
+    }
+
     buildTypes {
         release {
             optimization {
                 enable = false
             }
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
