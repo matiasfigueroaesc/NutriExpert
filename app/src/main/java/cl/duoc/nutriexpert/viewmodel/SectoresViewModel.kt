@@ -4,17 +4,22 @@ package cl.duoc.nutriexpert.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import cl.duoc.nutriexpert.data.local.AppDatabase
 import cl.duoc.nutriexpert.data.local.SectorEntity
+import cl.duoc.nutriexpert.data.repository.Repositorios
 import cl.duoc.nutriexpert.data.repository.SectorRepository
+import cl.duoc.nutriexpert.sync.Sincronizacion
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class SectoresViewModel(
-    application: Application
+// ViewModel de los sectores de un predio. Igual que PrediosViewModel: el repositorio
+// y el "control remoto" de sincronización llegan por el constructor para poder testearlo.
+class SectoresViewModel @JvmOverloads constructor(
+    application: Application,
+    repositorioInicial: SectorRepository = Repositorios.sectores(application),
+    private val pedirSincronizacion: () -> Unit = { Sincronizacion.pedir(application) }
 ) : AndroidViewModel(application) {
 
     private val _sectores =
@@ -31,12 +36,13 @@ class SectoresViewModel(
     private var repository: SectorRepository? = null
     private var cargaJob: Job? = null
 
-    // Se conecta solo a Room al crearse (igual que PrediosViewModel)
+    // Se conecta al repositorio al crearse (Room + microservicio)
     init {
-        configurarRepositorio(
-            SectorRepository(AppDatabase.obtener(application).sectorDao())
-        )
+        configurarRepositorio(repositorioInicial)
     }
+
+    // Busca un sector para editarlo (null si no existe)
+    suspend fun obtenerSector(id: Int): SectorEntity? = repository?.obtenerPorId(id)
 
     fun configurarRepositorio(repo: SectorRepository) {
         cargaJob?.cancel()
@@ -87,6 +93,7 @@ class SectoresViewModel(
             try {
                 repo.guardar(sector)
                 _error.value = null
+                pedirSincronizacion()
                 onResultado(true)
             } catch (e: CancellationException) {
                 throw e
@@ -115,6 +122,7 @@ class SectoresViewModel(
             try {
                 repo.eliminar(sector)
                 _error.value = null
+                pedirSincronizacion()
                 onResultado(true)
             } catch (e: CancellationException) {
                 throw e
