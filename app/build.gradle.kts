@@ -51,7 +51,15 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+    // Retrofit: para hablar con los microservicios por HTTP (JSON con Gson)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    // WorkManager: sincroniza en segundo plano cuando vuelve la red
+    implementation(libs.androidx.work.runtime.ktx)
     testImplementation(libs.junit)
+    // MockK finge el ApiService y el DAO en los tests; coroutines-test corre funciones suspend
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
