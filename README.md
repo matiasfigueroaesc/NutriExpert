@@ -6,11 +6,11 @@ La app es **offline-first**: todo funciona sin internet y los datos se guardan e
 
 ## Equipo
 
-| Integrante         | Responsabilidad principal |
+| Integrante         | Tercera entrega |
 |--------------------|---|
-| Matías Figueroa    | Predios (Room + ViewModel), lista y formulario de predio, animaciones |
-| Estefanía Ruiz        | Crear cuenta, recuperar contraseña, configuración de Room, validación con error e ícono por campo |
-| Fabián Rubio Parra | Recursos nativos (GPS y cámara/galería), README y tablero de tareas |
+| Matías Figueroa    | Microservicio `predios` (predios y sectores), CRUD de predios y sectores en la app, sincronización sin red (WorkManager), APK firmado |
+| Estefanía Ruiz     | Microservicio `predios` (planes), pantalla Mis planes, clima con Open-Meteo, colección de Postman |
+| Fabián Rubio Parra | Microservicio `usuarios`, login, registro y perfil contra el backend, despliegue en AWS EC2 |
 
 ## Funcionalidades (etapa 1)
 
@@ -23,6 +23,7 @@ La app es **offline-first**: todo funciona sin internet y los datos se guardan e
 - **Formularios validados:** cada campo muestra su propio mensaje de error e ícono; la validación está separada de la pantalla.
 - **Animaciones** en la navegación y en los elementos de la interfaz.
 - **Persistencia local** con Room (funciona sin conexión).
+- **Sincronización con el backend:** predios y sectores se crean, editan y borran en el teléfono y se envían al microservicio `predios` cuando hay internet. Mientras no llegan, la tarjeta muestra "Pendiente de sincronizar".
 - En desarrollo dentro de la etapa 1: análisis, plan de nutrición, calendario de riego y reporte.
 
 > Quedan para la etapa 2: asesor, integración con WhatsApp, panel de administración y diagnóstico por foto.
@@ -48,13 +49,91 @@ La app funciona sin internet, así que las cuentas se guardan en el teléfono (R
 - **Bloqueo por intentos:** tras 5 intentos fallidos el login se bloquea 30 segundos. El mensaje de error no revela si el correo existe.
 - **Sin copias de seguridad:** la base de datos y la sesión se excluyen de las copias en la nube y del traspaso a otro teléfono.
 
-> **API / backend:** todavía no está conectada (no hay Retrofit ni permiso de internet). `AuthRepository` y los repositorios son el punto donde se agregará la llamada a la API sin cambiar pantallas ni ViewModels.
+## Arquitectura
+
+```
+App Android (Compose)                         Backend (Spring Boot)
+  Pantalla → ViewModel → Repositorio            usuarios  :8080 ─┐
+                            ├──→ Room (fuente de verdad)         ├─→ MariaDB (EC2) / H2 (PC)
+                            └──→ Retrofit ── HTTP ── predios :8081 ─┘
+  SyncWorker (WorkManager) reintenta lo pendiente cuando vuelve la red
+```
+
+La app es offline-first: todo se guarda primero en Room con `sincronizado = false`. El `SyncWorker` envía lo pendiente al microservicio, guarda el `remoteId` que responde el servidor y marca `sincronizado = true`. Si no hay red, el dato queda en el teléfono y se reintenta después.
+
+## Microservicios y endpoints
+
+Todos responden: `200` correcto, `201` creado, `204` borrado, `400` faltan datos, `404` no existe.
+
+### `predios` (puerto 8081) — carpeta `backend/predios`
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/predios?usuarioId={id}` | Lista los predios de un usuario |
+| GET | `/api/predios/{id}` | Obtiene un predio |
+| POST | `/api/predios` | Crea un predio |
+| PUT | `/api/predios/{id}` | Actualiza un predio |
+| DELETE | `/api/predios/{id}` | Borra un predio y sus sectores |
+| GET | `/api/sectores?predioId={id}` | Lista los sectores de un predio |
+| GET | `/api/sectores/{id}` | Obtiene un sector |
+| POST | `/api/sectores` | Crea un sector |
+| PUT | `/api/sectores/{id}` | Actualiza un sector |
+| DELETE | `/api/sectores/{id}` | Borra un sector |
+
+Ejemplo de predio (JSON):
+
+```json
+{ "usuarioId": 1, "nombre": "Los Aromos", "comuna": "Quillota", "latitud": -32.88, "longitud": -71.25, "superficieHa": 10.0 }
+```
+
+Ejemplo de sector (JSON):
+
+```json
+{ "predioId": 1, "nombre": "Sector norte", "cultivo": "cultivo-tomate", "superficieHa": 4.0 }
+```
+
+<!-- Estefanía: endpoints de /api/planes y API externa Open-Meteo -->
+<!-- Fabián: endpoints del microservicio usuarios (:8080) -->
+
+## Cómo ejecutar el backend
+
+Requisitos: Java 17. Maven no es necesario, el proyecto trae `mvnw`.
+
+**En el PC (base de datos H2 en memoria):**
+
+```bash
+cd backend/predios
+./mvnw spring-boot:run        # en Windows: mvnw.cmd spring-boot:run
+```
+
+Queda en `http://localhost:8081`. La consola de H2 está en `http://localhost:8081/h2-console` (JDBC URL `jdbc:h2:mem:predios`, usuario `sa`, sin clave).
+
+**Tests del backend:** `./mvnw test`
+
+**En la EC2 (MariaDB):**
+
+```bash
+cd backend/predios
+mvn clean package -DskipTests
+DB_HOST=localhost DB_NAME=nutriexpert DB_USER=nutriexpert DB_PASSWORD=<clave> \
+  nohup java -jar target/predios-1.0.jar --spring.profiles.active=prod > predios.log 2>&1 &
+```
+
+En el Security Group de la EC2 hay que abrir los puertos 8080 y 8081.
+
+<!-- Fabián: pasos de la EC2, MariaDB, Elastic IP y levantar.sh -->
+
+**Dirección del backend en la app:** `app/src/main/java/cl/duoc/nutriexpert/data/remote/ApiConfig.kt`. Con `http://10.0.2.2` el emulador llega al PC; para la EC2 se cambia por la Elastic IP.
 
 ## Tecnologías
 
 - **Kotlin** + **Jetpack Compose** (Material 3)
 - Arquitectura **MVVM**: Screen → ViewModel → Repositorio → Room
 - **Room** como base de datos local
+- **Retrofit** + Gson para consumir los microservicios
+- **WorkManager** para sincronizar en segundo plano
+- **Spring Boot 3** (Java 17) + JPA para los microservicios, H2 en el PC y MariaDB en la EC2
+- Tests: **JUnit** + **MockK** (app) y **JUnit 5** + **MockMvc** (backend)
 - Android Gradle Plugin **9.3.1**
 - Paquete `cl.duoc.nutriexpert` · minSdk 24
 
@@ -74,20 +153,44 @@ La app funciona sin internet, así que las cuentas se guardan en el teléfono (R
 - En un teléfono real, simplemente acepta los permisos cuando la app los pida.
 - En el emulador, la ubicación se simula desde *Extended controls (⋯) → Location*, y la cámara usa una escena virtual.
 
+## Tests
+
+- **App:** `./gradlew testDebugUnitTest` (o clic derecho en `app/src/test` → *Run Tests*). Los repositorios y ViewModels se prueban con MockK, que finge Room y el servidor, incluido el caso sin red.
+- **Backend:** `cd backend/predios && ./mvnw test`.
+
+## APK firmado
+
+- Llave de firma: `app/nutriexpert.jks` (alias `nutriexpert`). La configuración está en `signingConfigs` de `app/build.gradle.kts`.
+- Para generar el APK: **Build → Generate Signed App Bundle or APK → APK**, elegir `app/nutriexpert.jks`, o desde la terminal `./gradlew assembleRelease`. El APK queda en `app/build/outputs/apk/release/app-release.apk`.
+
+<!-- Captura de la generación del APK y del .jks -->
+
 ## Estructura del proyecto
 
 ```
 app/src/main/java/cl/duoc/nutriexpert/
-├── data/          # Entidades, DAOs, base de datos Room y repositorios
+├── data/
+│   ├── local/       # Entidades, DAOs y base de datos Room
+│   ├── remote/      # Retrofit: ApiConfig, ApiService y DTO
+│   └── repository/  # Repositorios (Room + servidor)
 ├── domain/        # Modelos y motor de cálculo del plan nutricional
 ├── nativo/        # Ayudantes de GPS (UbicacionHelper) y cámara/galería (FotoHelper)
 ├── seguridad/     # Hash de contraseñas y sesión del usuario
+├── sync/          # SyncWorker y programación con WorkManager
 ├── ui/
 │   ├── components/  # Componentes reutilizables (barra superior, botones, campos, ubicación, foto)
 │   ├── plan/        # Asistente del plan nutricional
 │   └── views/       # Pantallas de la app
 ├── utils/         # Validaciones de formularios
 └── viewmodel/     # ViewModels
+```
+
+```
+backend/predios/src/main/java/cl/duoc/predios/
+├── model/         # Entidades JPA (Predio, Sector)
+├── repository/    # Acceso a la base de datos (JpaRepository)
+├── service/       # Reglas: validar, crear, actualizar, borrar
+└── controller/    # Endpoints REST
 ```
 
 ## Forma de trabajo
