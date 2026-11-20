@@ -1,4 +1,4 @@
-
+﻿
 package cl.duoc.nutriexpert.data.local
 
 import androidx.room.Dao
@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PlanDao {
 
-    @Query("SELECT * FROM planes WHERE sectorId = :sectorId")
+    @Query("SELECT * FROM planes WHERE sectorId = :sectorId AND pendienteEliminar = 0 ORDER BY id DESC")
     fun obtenerPorSector(sectorId: Int): Flow<List<PlanEntity>>
 
     @Query("SELECT * FROM planes WHERE id = :id LIMIT 1")
@@ -29,4 +29,8 @@ interface PlanDao {
 
     @Delete
     suspend fun eliminar(plan: PlanEntity)
+
+    @Query("DELETE FROM planes WHERE id = :id")
+    suspend fun eliminarPorId(id: Int)
 }
+

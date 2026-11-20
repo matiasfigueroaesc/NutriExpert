@@ -11,6 +11,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -25,6 +26,7 @@ import cl.duoc.nutriexpert.ui.plan.PlanCultivoScreen
 import cl.duoc.nutriexpert.ui.plan.PlanFertilizantesScreen
 import cl.duoc.nutriexpert.ui.plan.PlanResumenScreen
 import cl.duoc.nutriexpert.ui.plan.PlanSemanaScreen
+import cl.duoc.nutriexpert.ui.plan.MisPlanesScreen
 
 import cl.duoc.nutriexpert.ui.views.LoginScreen
 import cl.duoc.nutriexpert.ui.views.RegistroScreen
@@ -41,6 +43,7 @@ import cl.duoc.nutriexpert.ui.views.CrearAnalisisScreen
 import cl.duoc.nutriexpert.viewmodel.SectoresViewModel
 import cl.duoc.nutriexpert.viewmodel.AnalisisViewModel
 import cl.duoc.nutriexpert.viewmodel.PlanViewModel
+import cl.duoc.nutriexpert.viewmodel.PlanesViewModel
 
 private const val DURACION_TRANSICION = 300
 
@@ -108,7 +111,7 @@ fun AppNavigation(navController: NavHostController) {
             RegistroScreen(navController)
         }
 
-        // RECUPERAR CONTRASEÑA
+        // RECUPERAR CONTRASEÃ‘A
         composable("recuperar") {
             RecuperarScreen(navController)
         }
@@ -170,6 +173,10 @@ fun AppNavigation(navController: NavHostController) {
                     navController.navigate("analisis/$sectorId")
                 },
 
+                onVerPlanes = { sectorId ->
+                    navController.navigate("mis_planes/$sectorId")
+                },
+
                 onCrearPlan = { sector ->
 
                     // Guardar el sector seleccionado.
@@ -190,6 +197,36 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
+
+        // MIS PLANES DEL SECTOR
+        composable(
+            route = "mis_planes/{sectorId}",
+            arguments = listOf(
+                navArgument("sectorId") {
+                    type = NavType.IntType
+                }
+            )
+        ) { backStackEntry ->
+
+            val sectorId = backStackEntry.arguments?.getInt("sectorId") ?: 0
+
+            val planesViewModel: PlanesViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : androidx.lifecycle.ViewModel> create(
+                        modelClass: Class<T>
+                    ): T {
+                        return PlanesViewModel(planRepository) as T
+                    }
+                }
+            )
+
+            MisPlanesScreen(
+                sectorId = sectorId,
+                viewModel = planesViewModel,
+                onVolver = { navController.popBackStack() }
+            )
+        }
         // CREAR SECTOR
         composable(
             route = "crear_sector/{predioId}",
@@ -222,7 +259,7 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
-        // ANÁLISIS DEL SECTOR
+        // ANÃLISIS DEL SECTOR
         composable(
             route = "analisis/{sectorId}",
             arguments = listOf(
@@ -251,7 +288,7 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
-        // CREAR ANÁLISIS
+        // CREAR ANÃLISIS
         composable(
             route = "crear_analisis/{sectorId}",
             arguments = listOf(
@@ -302,18 +339,21 @@ fun AppNavigation(navController: NavHostController) {
             PlanSemanaScreen(
                 navController = navController,
                 planViewModel = planViewModel,
-                onGuardarPlan = { nombreTemporada ->
+                onGuardarPlan = { nombreTemporada, fechaInicio, fechaTermino ->
 
                     require(sectorPlanId > 0) {
-                        "No se ha seleccionado un sector válido"
+                        "No se ha seleccionado un sector vÃ¡lido"
                     }
 
                     planRepository.guardarPlan(
                         sectorId = sectorPlanId,
-                        nombreTemporada = nombreTemporada
+                        nombreTemporada = nombreTemporada,
+                        fechaInicio = fechaInicio,
+                        fechaTermino = fechaTermino
                     )
                 }
             )
         }
     }
 }
+

@@ -15,6 +15,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
+import android.app.DatePickerDialog
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material3.Button
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -48,7 +53,7 @@ private val VOLUMENES = listOf(500.0, 1000.0, 2000.0)
 fun PlanSemanaScreen(
     navController: NavHostController,
     planViewModel: PlanViewModel,
-    onGuardarPlan: suspend (String) -> Long
+    onGuardarPlan: suspend (String, String, String) -> Long
 ) {
     val estado = planViewModel.estado
     val etapas = planViewModel.etapas()
@@ -65,6 +70,29 @@ fun PlanSemanaScreen(
 
     var errorGuardado by remember {
         mutableStateOf<String?>(null)
+    }
+
+    var fechaInicio by remember { mutableStateOf<LocalDate?>(null) }
+    var fechaTermino by remember { mutableStateOf<LocalDate?>(null) }
+    val context = LocalContext.current
+    val semanasCultivo = etapas.sumOf { it.semanas }
+    val diasTemporada = if (fechaInicio != null && fechaTermino != null) {
+        ChronoUnit.DAYS.between(fechaInicio, fechaTermino) + 1
+    } else null
+
+    fun abrirCalendario(esInicio: Boolean) {
+        val actual = if (esInicio) fechaInicio else fechaTermino
+        val hoy = actual ?: LocalDate.now()
+        DatePickerDialog(
+            context,
+            { _, anio, mes, dia ->
+                val fecha = LocalDate.of(anio, mes + 1, dia)
+                if (esInicio) fechaInicio = fecha else fechaTermino = fecha
+            },
+            hoy.year,
+            hoy.monthValue - 1,
+            hoy.dayOfMonth
+        ).show()
     }
 
     val scope = rememberCoroutineScope()
@@ -89,13 +117,17 @@ fun PlanSemanaScreen(
                 if (!guardando) {
                     if (nombreTemporada.isBlank()) {
                         errorGuardado = "Ingresa un nombre para la temporada"
+                    } else if (fechaInicio == null || fechaTermino == null) {
+                        errorGuardado = "Selecciona las fechas de inicio y término"
+                    } else if (fechaTermino!!.isBefore(fechaInicio)) {
+                        errorGuardado = "La fecha de término debe ser posterior al inicio"
                     } else {
                         guardando = true
                         errorGuardado = null
 
                         scope.launch {
                             try {
-                                onGuardarPlan(nombreTemporada.trim())
+                                onGuardarPlan(nombreTemporada.trim(), fechaInicio.toString(), fechaTermino.toString())
 
                                 navController.popBackStack(
                                     "plan/cultivo",
@@ -136,7 +168,7 @@ fun PlanSemanaScreen(
                     errorGuardado = null
                 },
                 label = {
-                    Text("Ejemplo: Temporada 2026-2027")
+                    Text("Ejemplo: Tomate primavera")
                 },
                 singleLine = true,
                 isError = errorGuardado != null,

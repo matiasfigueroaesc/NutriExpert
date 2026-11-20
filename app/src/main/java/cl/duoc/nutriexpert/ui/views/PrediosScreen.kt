@@ -1,4 +1,4 @@
-package cl.duoc.nutriexpert.ui.views
+﻿package cl.duoc.nutriexpert.ui.views
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -57,6 +57,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import cl.duoc.nutriexpert.data.local.PredioEntity
+import cl.duoc.nutriexpert.data.repository.ClimaRepository
+import cl.duoc.nutriexpert.data.repository.PronosticoDia
 import cl.duoc.nutriexpert.nativo.FotoHelper
 import cl.duoc.nutriexpert.ui.components.BarraSuperior
 import cl.duoc.nutriexpert.ui.components.BotonPrincipal
@@ -259,6 +261,8 @@ fun PredioCard(
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
+                PronosticoPredio7Dias(predio)
+                Spacer(modifier = Modifier.height(12.dp))
                 BotonPrincipal(texto = "Ver sectores", onClick = onVerSectores)
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                     TextButton(onClick = onEditar) {
@@ -275,6 +279,54 @@ fun PredioCard(
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Eliminar", color = MaterialTheme.colorScheme.error)
                     }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun PronosticoPredio7Dias(predio: PredioEntity) {
+    val latitud = predio.latitud
+    val longitud = predio.longitud
+
+    if (latitud == null || longitud == null) {
+        Text("Agrega la ubicación GPS para ver el pronóstico.")
+        return
+    }
+
+    val pronostico by produceState<List<PronosticoDia>?>(
+        initialValue = null,
+        latitud,
+        longitud
+    ) {
+        value = ClimaRepository().obtenerPronostico7Dias(latitud, longitud)
+    }
+
+    Text(
+        text = "Pronóstico de 7 días",
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onPrimaryContainer
+    )
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    when {
+        pronostico == null -> Text("Cargando pronóstico...")
+        pronostico!!.isEmpty() -> Text("No se pudo obtener el pronóstico.")
+        else -> {
+            pronostico!!.forEach { dia ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 3.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(dia.fecha)
+                    Text(
+                        "${dia.temperaturaMinima.toInt()}° / ${dia.temperaturaMaxima.toInt()}°"
+                    )
                 }
             }
         }

@@ -17,6 +17,8 @@ public class Plan {
 
     private Long sectorId;
     private String nombreTemporada;
+    private String fechaInicio;
+    private String fechaTermino;
 
     public Plan() {
     }
@@ -48,5 +50,21 @@ public class Plan {
 
     public void setNombreTemporada(String nombreTemporada) {
         this.nombreTemporada = nombreTemporada;
+    }
+
+    public String getFechaInicio() {
+        return fechaInicio;
+    }
+
+    public void setFechaInicio(String fechaInicio) {
+        this.fechaInicio = fechaInicio;
+    }
+
+    public String getFechaTermino() {
+        return fechaTermino;
+    }
+
+    public void setFechaTermino(String fechaTermino) {
+        this.fechaTermino = fechaTermino;
     }
 }

@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface SectorDao {
 
+    @androidx.room.Query("UPDATE sectores SET hectareas = :hectareas WHERE id = :sectorId")
+    suspend fun actualizarHectareas(sectorId: Int, hectareas: Double): Int
+
     @Query("SELECT * FROM sectores WHERE predioId = :predioId ORDER BY nombre")
     fun obtenerPorPredio(predioId: Int): Flow<List<SectorEntity>>
 

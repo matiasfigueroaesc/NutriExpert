@@ -43,6 +43,8 @@ public class PlanService {
         return planRepository.findById(id).map(plan -> {
             plan.setSectorId(datos.getSectorId());
             plan.setNombreTemporada(datos.getNombreTemporada());
+            plan.setFechaInicio(datos.getFechaInicio());
+            plan.setFechaTermino(datos.getFechaTermino());
             return planRepository.save(plan);
         });
     }

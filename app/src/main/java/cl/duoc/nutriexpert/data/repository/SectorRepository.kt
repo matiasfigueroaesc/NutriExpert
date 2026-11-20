@@ -7,6 +7,9 @@ import kotlinx.coroutines.flow.Flow
 
 class SectorRepository(private val dao: SectorDao) {
 
+    suspend fun actualizarHectareas(sectorId: Int, hectareas: Double): Int =
+        dao.actualizarHectareas(sectorId, hectareas)
+
     fun obtenerPorPredio(predioId: Int): Flow<List<SectorEntity>> =
         dao.obtenerPorPredio(predioId)
 

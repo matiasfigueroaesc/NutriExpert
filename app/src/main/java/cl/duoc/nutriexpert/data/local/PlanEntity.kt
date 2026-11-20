@@ -10,7 +10,9 @@ data class PlanEntity(
     val id: Int = 0,
     val sectorId: Int,
     val nombreTemporada: String,
+    val fechaInicio: String? = null,
+    val fechaTermino: String? = null,
     val remoteId: Long? = null,
-    val sincronizado: Boolean = false
-
+    val sincronizado: Boolean = false,
+    val pendienteEliminar: Boolean = false
 )

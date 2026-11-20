@@ -137,7 +137,7 @@ fun CrearSectorScreen(
                     hectareas = it
                     errores = errores.copy(hectareas = null)
                 },
-                etiqueta = "Superficie (ha)",
+                etiqueta = "Superficie (ha). Ejemplo: 2,555",
                 error = errores.hectareas,
                 tipoTeclado = KeyboardType.Decimal
             )
@@ -154,9 +154,9 @@ fun CrearSectorScreen(
                         hectareas = hectareas
                     )
 
-                    errores = resultado
+                    errores = if (hectareas.contains(".")) resultado.copy(hectareas = "Usa coma para los decimales. Ejemplo: 2,555") else resultado
 
-                    if (!resultado.hayErrores()) {
+                    if (!resultado.hayErrores() && !hectareas.contains(".")) {
                         val superficie = hectareas
                             .trim()
                             .replace(",", ".")
