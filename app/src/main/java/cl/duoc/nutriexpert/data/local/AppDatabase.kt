@@ -1,3 +1,4 @@
+
 package cl.duoc.nutriexpert.data.local
 
 import android.content.Context
@@ -9,8 +10,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-// Base de datos local de la app. Aquí se registran todas las tablas (entities).
-// Al agregar una tabla nueva hay que subir "version" en 1.
+// Base de datos local de NutriExpert.
+// Al agregar una tabla nueva, se incrementa la version.
+
 @Database(
     entities = [
         PredioEntity::class,
@@ -18,9 +20,10 @@ import kotlinx.coroutines.launch
         FertilizanteEntity::class,
         EtapaEntity::class,
         SectorEntity::class,
-        AnalisisEntity::class
+        AnalisisEntity::class,
+        PlanEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -31,9 +34,10 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun etapaDao(): EtapaDao
     abstract fun sectorDao(): SectorDao
     abstract fun analisisDao(): AnalisisDao
+    abstract fun planDao(): PlanDao
 
     companion object {
-        // Una sola instancia para toda la app
+
         @Volatile
         private var INSTANCIA: AppDatabase? = null
 
@@ -44,13 +48,15 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "nutriexpert.db"
                 )
-                    // Mientras desarrollamos: si cambia la versión, se borra y se crea de nuevo
+                    .addMigrations(MIGRATION_2_3)
                     .fallbackToDestructiveMigration(true)
                     .build()
                     .also { db ->
                         INSTANCIA = db
-                        // Carga o actualiza el catálogo en segundo plano al abrir la app
-                        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+
+                        CoroutineScope(
+                            SupervisorJob() + Dispatchers.IO
+                        ).launch {
                             CatalogoInicial.cargar(db)
                         }
                     }
