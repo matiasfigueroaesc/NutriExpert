@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Permite http:// (sin cifrar). Los microservicios corren en 10.0.2.2 (el PC visto
+     desde el emulador) o en la Elastic IP de la EC2, y ninguno tiene https. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

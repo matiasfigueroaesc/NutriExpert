@@ -26,7 +26,8 @@ class SyncWorker(
         // 1. Subir: primero los predios, porque los sectores necesitan el id del predio en el servidor
         val prediosOk = predios.sincronizarPendientes()
         val sectoresOk = sectores.sincronizarPendientes()
-        // Para sumar los planes: val planesOk = Repositorios.planes(applicationContext).sincronizarPendientes()
+        // Planes (Estefanía): si falla, quedan pendientes y se reintentan en la próxima vuelta
+        Repositorios.planes(applicationContext).sincronizarPendientes()
 
         // 2. Bajar: lo que está en el servidor y no en el teléfono
         val descargaOk = predios.descargar()

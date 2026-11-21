@@ -1,0 +1,71 @@
+
+{
+  "info": {
+    "name": "NutriExpert - Microservicio Planes",
+    "description": "Pruebas CRUD del microservicio de planes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8082"
+    }
+  ],
+  "item": [
+    {
+      "name": "Crear plan",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"sectorId\":1,\"nombreTemporada\":\"Primavera 2026\"}"
+        },
+        "url": "{{baseUrl}}/api/planes"
+      }
+    },
+    {
+      "name": "Listar planes por sector",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/planes?sectorId=1"
+      }
+    },
+    {
+      "name": "Buscar plan por ID",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/planes/1"
+      }
+    },
+    {
+      "name": "Actualizar plan",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"sectorId\":1,\"nombreTemporada\":\"Verano 2027\"}"
+        },
+        "url": "{{baseUrl}}/api/planes/1"
+      }
+    },
+    {
+      "name": "Eliminar plan",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/planes/1"
+      }
+    }
+  ]
+}

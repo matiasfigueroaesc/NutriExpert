@@ -19,6 +19,10 @@ interface SectorDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun guardar(sector: SectorEntity): Long
 
+    // Cambia solo las hectáreas (lo usa el plan). Queda pendiente para que llegue al servidor.
+    @Query("UPDATE sectores SET hectareas = :hectareas, sincronizado = 0 WHERE id = :sectorId")
+    suspend fun actualizarHectareas(sectorId: Int, hectareas: Double): Int
+
     @Query("UPDATE sectores SET eliminado = 1, sincronizado = 0 WHERE id = :id")
     suspend fun marcarEliminado(id: Int)
 
