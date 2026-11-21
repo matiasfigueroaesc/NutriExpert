@@ -1,3 +1,4 @@
+
 package cl.duoc.nutriexpert.data.local
 
 import android.content.Context
@@ -9,8 +10,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-// Base de datos local de la app. Aquí se registran todas las tablas (entities).
-// Al agregar una tabla nueva hay que subir "version" en 1.
+// Base de datos local de NutriExpert.
+// Al agregar una tabla nueva, se incrementa la version.
+
 @Database(
     entities = [
         PredioEntity::class,
@@ -18,9 +20,14 @@ import kotlinx.coroutines.launch
         FertilizanteEntity::class,
         EtapaEntity::class,
         SectorEntity::class,
-        AnalisisEntity::class
+        AnalisisEntity::class,
+        UsuarioEntity::class,
+        PlanEntity::class
     ],
-    version = 2,
+    // 3: tabla usuarios y dueño (usuarioId) de cada predio
+    // 4: predios y sectores guardan remoteId, sincronizado y eliminado (sincronización con el backend)
+    // 5: tabla planes (con temporada, fechas y sincronización)
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -31,9 +38,11 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun etapaDao(): EtapaDao
     abstract fun sectorDao(): SectorDao
     abstract fun analisisDao(): AnalisisDao
+    abstract fun usuarioDao(): UsuarioDao
+    abstract fun planDao(): PlanDao
 
     companion object {
-        // Una sola instancia para toda la app
+
         @Volatile
         private var INSTANCIA: AppDatabase? = null
 
@@ -49,8 +58,10 @@ abstract class AppDatabase : RoomDatabase() {
                     .build()
                     .also { db ->
                         INSTANCIA = db
-                        // Carga o actualiza el catálogo en segundo plano al abrir la app
-                        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+
+                        CoroutineScope(
+                            SupervisorJob() + Dispatchers.IO
+                        ).launch {
                             CatalogoInicial.cargar(db)
                         }
                     }
@@ -58,3 +69,5 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 }
+
+

@@ -1,13 +1,19 @@
 
 package cl.duoc.nutriexpert.viewmodel
 
-import androidx.compose.runtime.getValue
+import android.app.Application
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import cl.duoc.nutriexpert.data.local.AppDatabase
+import cl.duoc.nutriexpert.data.repository.AuthRepository
+import cl.duoc.nutriexpert.data.repository.ResultadoAuth
+import cl.duoc.nutriexpert.seguridad.SesionManager
 import cl.duoc.nutriexpert.utils.ErroresLogin
 import cl.duoc.nutriexpert.utils.validarCamposLogin
-import cl.duoc.nutriexpert.utils.validarLogin
+import kotlinx.coroutines.launch
 
 // Guarda los datos y los resultados del formulario de login
 data class LoginState(
@@ -15,11 +21,17 @@ data class LoginState(
     val contrasena: String = "",
     val errores: ErroresLogin = ErroresLogin(),
     val mensajeError: String = "",
+    val cargando: Boolean = false,      // true mientras se verifica la contraseña
     val ingresoCorrecto: Boolean = false
 )
 
 // Administra el estado y las acciones del inicio de sesión
-class LoginViewModel : ViewModel() {
+class LoginViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val authRepository = AuthRepository(
+        AppDatabase.obtener(application).usuarioDao(),
+        SesionManager(application)
+    )
 
     var estado by mutableStateOf(LoginState())
         private set
@@ -29,8 +41,7 @@ class LoginViewModel : ViewModel() {
         estado = estado.copy(
             correo = valor,
             errores = estado.errores.copy(correo = null),
-            mensajeError = "",
-            ingresoCorrecto = false
+            mensajeError = ""
         )
     }
 
@@ -39,39 +50,36 @@ class LoginViewModel : ViewModel() {
         estado = estado.copy(
             contrasena = valor,
             errores = estado.errores.copy(contrasena = null),
-            mensajeError = "",
-            ingresoCorrecto = false
+            mensajeError = ""
         )
     }
 
-    // Valida los campos para permitir el acceso al prototipo
+    // Valida los campos y comprueba el correo y la contraseña contra las cuentas guardadas
     fun ingresar() {
+        if (estado.cargando) return
 
-        val errores = validarCamposLogin(
-            estado.correo,
-            estado.contrasena
-        )
+        val errores = validarCamposLogin(estado.correo, estado.contrasena)
 
         // Si existen errores, los guarda para mostrarlos en pantalla
         if (errores.hayErrores()) {
-            estado = estado.copy(
-                errores = errores,
-                mensajeError = "",
-                ingresoCorrecto = false
-            )
+            estado = estado.copy(errores = errores, mensajeError = "")
             return
         }
 
-        // Si los campos son válidos, comprueba el resultado del login
-        val mensaje = validarLogin(
-            estado.correo,
-            estado.contrasena
-        )
+        estado = estado.copy(errores = ErroresLogin(), mensajeError = "", cargando = true)
 
-        estado = estado.copy(
-            errores = ErroresLogin(),
-            mensajeError = mensaje,
-            ingresoCorrecto = mensaje.isEmpty()
-        )
+        viewModelScope.launch {
+            estado = when (val resultado = authRepository.iniciarSesion(estado.correo, estado.contrasena)) {
+                is ResultadoAuth.Exito -> estado.copy(
+                    contrasena = "",            // no se deja la contraseña en memoria
+                    cargando = false,
+                    ingresoCorrecto = true
+                )
+                is ResultadoAuth.Error -> estado.copy(
+                    mensajeError = resultado.mensaje,
+                    cargando = false
+                )
+            }
+        }
     }
 }

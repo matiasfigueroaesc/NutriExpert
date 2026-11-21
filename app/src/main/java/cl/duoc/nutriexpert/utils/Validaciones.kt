@@ -100,10 +100,10 @@ fun validarCamposRegistro(
 ): ErroresRegistro {
 
     return ErroresRegistro(
-        nombre = if (nombre.isBlank()) {
-            "Ingresa tu nombre"
-        } else {
-            ""
+        nombre = when {
+            nombre.isBlank() -> "Ingresa tu nombre"
+            nombre.trim().length < 2 -> "El nombre debe tener al menos 2 caracteres"
+            else -> ""
         },
 
         correo = when {
@@ -117,6 +117,8 @@ fun validarCamposRegistro(
             contrasena.isBlank() -> "Ingresa tu contraseña"
             contrasena.length < 8 ->
                 "La contraseña debe tener al menos 8 caracteres"
+            !contrasena.any { it.isLetter() } || !contrasena.any { it.isDigit() } ->
+                "La contraseña debe tener letras y números"
             else -> ""
         },
 
@@ -206,9 +208,9 @@ fun validarSector(
         hectareas = when {
             hectareas.isBlank() -> "Ingresa la superficie"
             superficie == null || !superficie.isFinite() ->
-                "Ingresa una superficie válida"
+                "Usa solo números, ej: 7,5"
             superficie <= 0.0 ->
-                "La superficie debe ser mayor a cero"
+                "La superficie debe ser mayor a 0"
             else -> null
         }
     )
@@ -269,19 +271,7 @@ fun validarAnalisis(
         }
     }
 
-    val fechaValida = try {
-        val partes = fecha.split("-")
-        if (partes.size != 3 ||
-            !Regex("""\d{4}-\d{2}-\d{2}""").matches(fecha)
-        ) {
-            false
-        } else {
-            java.time.LocalDate.parse(fecha)
-            true
-        }
-    } catch (e: java.time.format.DateTimeParseException) {
-        false
-    }
+    val fechaValida = esFechaValida(fecha.trim())
 
     return ErroresAnalisis(
         fecha = if (fechaValida) null
@@ -290,3 +280,18 @@ fun validarAnalisis(
     )
 }
 
+
+// Comprueba una fecha AAAA-MM-DD que exista de verdad (rechaza 2026-02-30).
+// Se usa SimpleDateFormat estricto porque java.time recién existe desde Android 8
+// y la app funciona desde Android 7 (minSdk 24).
+fun esFechaValida(fecha: String): Boolean {
+    if (!Regex("""\d{4}-\d{2}-\d{2}""").matches(fecha)) return false
+    val formato = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).apply {
+        isLenient = false
+    }
+    return try {
+        formato.parse(fecha) != null
+    } catch (e: java.text.ParseException) {
+        false
+    }
+}

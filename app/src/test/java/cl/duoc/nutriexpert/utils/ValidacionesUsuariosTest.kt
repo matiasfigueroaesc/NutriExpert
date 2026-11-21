@@ -64,8 +64,8 @@ class ValidacionesUsuariosTest {
         val errores = validarCamposRegistro(
             nombre = "",
             correo = "usuario@gmail.com",
-            contrasena = "abcdefgh",
-            confirmarContrasena = "abcdefgh",
+            contrasena = "agricola26",
+            confirmarContrasena = "agricola26",
             aceptaPrivacidad = true
         )
 
@@ -77,7 +77,7 @@ class ValidacionesUsuariosTest {
         val errores = validarCamposRegistro(
             nombre = "Usuario",
             correo = "usuario@gmail.com",
-            contrasena = "abcdefgh",
+            contrasena = "agricola26",
             confirmarContrasena = "12345678",
             aceptaPrivacidad = true
         )
@@ -93,8 +93,8 @@ class ValidacionesUsuariosTest {
         val errores = validarCamposRegistro(
             nombre = "Usuario",
             correo = "usuario@gmail.com",
-            contrasena = "abcdefgh",
-            confirmarContrasena = "abcdefgh",
+            contrasena = "agricola26",
+            confirmarContrasena = "agricola26",
             aceptaPrivacidad = false
         )
 
@@ -109,12 +109,60 @@ class ValidacionesUsuariosTest {
         val errores = validarCamposRegistro(
             nombre = "Usuario",
             correo = "usuario@gmail.com",
+            contrasena = "agricola26",
+            confirmarContrasena = "agricola26",
+            aceptaPrivacidad = true
+        )
+
+        assertFalse(errores.hayErrores())
+    }
+
+    @Test
+    fun registroContrasenaSoloLetrasMuestraError() {
+        val errores = validarCamposRegistro(
+            nombre = "Usuario",
+            correo = "usuario@gmail.com",
             contrasena = "abcdefgh",
             confirmarContrasena = "abcdefgh",
             aceptaPrivacidad = true
         )
 
-        assertFalse(errores.hayErrores())
+        assertEquals(
+            "La contraseña debe tener letras y números",
+            errores.contrasena
+        )
+    }
+
+    @Test
+    fun registroContrasenaSoloNumerosMuestraError() {
+        val errores = validarCamposRegistro(
+            nombre = "Usuario",
+            correo = "usuario@gmail.com",
+            contrasena = "12345678",
+            confirmarContrasena = "12345678",
+            aceptaPrivacidad = true
+        )
+
+        assertEquals(
+            "La contraseña debe tener letras y números",
+            errores.contrasena
+        )
+    }
+
+    @Test
+    fun registroNombreDeUnaLetraMuestraError() {
+        val errores = validarCamposRegistro(
+            nombre = "A",
+            correo = "usuario@gmail.com",
+            contrasena = "agricola26",
+            confirmarContrasena = "agricola26",
+            aceptaPrivacidad = true
+        )
+
+        assertEquals(
+            "El nombre debe tener al menos 2 caracteres",
+            errores.nombre
+        )
     }
 
     // RECUPERAR CONTRASEÑA
