@@ -5,23 +5,35 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+
+import cl.duoc.nutriexpert.data.local.AppDatabase
+import cl.duoc.nutriexpert.data.remote.planes.RetrofitPlanesClient
+import cl.duoc.nutriexpert.data.repository.PlanRepository
+
 import cl.duoc.nutriexpert.ui.plan.PlanCultivoScreen
 import cl.duoc.nutriexpert.ui.plan.PlanFertilizantesScreen
 import cl.duoc.nutriexpert.ui.plan.PlanResumenScreen
 import cl.duoc.nutriexpert.ui.plan.PlanSemanaScreen
+import cl.duoc.nutriexpert.ui.plan.MisPlanesScreen
 
 import cl.duoc.nutriexpert.ui.views.LoginScreen
 import cl.duoc.nutriexpert.ui.views.RegistroScreen
 import cl.duoc.nutriexpert.ui.views.RecuperarScreen
+import cl.duoc.nutriexpert.ui.views.InicioScreen
+import cl.duoc.nutriexpert.ui.views.PerfilScreen
 import cl.duoc.nutriexpert.ui.views.PrediosScreen
 import cl.duoc.nutriexpert.ui.views.PredioFormScreen
 import cl.duoc.nutriexpert.ui.views.SectoresScreen
@@ -33,19 +45,35 @@ import cl.duoc.nutriexpert.data.local.SectorEntity
 import cl.duoc.nutriexpert.viewmodel.SectoresViewModel
 import cl.duoc.nutriexpert.viewmodel.AnalisisViewModel
 import cl.duoc.nutriexpert.viewmodel.PlanViewModel
+import cl.duoc.nutriexpert.viewmodel.PlanesViewModel
 import cl.duoc.nutriexpert.seguridad.SesionManager
 
 private const val DURACION_TRANSICION = 300
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
-    // Un solo ViewModel para los 4 pasos del asistente, así no se pierde lo elegido
+
+    // ViewModel compartido por los cuatro pasos del asistente.
     val planViewModel: PlanViewModel = viewModel()
 
-    // Si ya hay una sesión guardada se entra directo a "Mis predios";
-    // si no, se parte en el login. Sin sesión no se llega a ninguna otra pantalla.
+    // Sector seleccionado al comenzar un nuevo plan.
+    var sectorPlanId by rememberSaveable {
+        mutableIntStateOf(0)
+    }
+
+    // Repositorio de planes: Room + Retrofit.
     val context = LocalContext.current
-    val inicio = remember { if (SesionManager(context).haySesion()) "predios" else "login" }
+
+    val planRepository = remember(context) {
+        PlanRepository(
+            planDao = AppDatabase.obtener(context).planDao(),
+            api = RetrofitPlanesClient.api
+        )
+    }
+
+    // Si ya hay una sesión guardada se entra directo a "Inicio";
+    // si no, se parte en el login. Sin sesión no se llega a ninguna otra pantalla.
+    val inicio = remember { if (SesionManager(context).haySesion()) "inicio" else "login" }
 
     NavHost(
         navController = navController,
@@ -56,18 +84,21 @@ fun AppNavigation(navController: NavHostController) {
                 animationSpec = tween(DURACION_TRANSICION)
             )
         },
+
         exitTransition = {
             slideOutOfContainer(
                 AnimatedContentTransitionScope.SlideDirection.Left,
                 animationSpec = tween(DURACION_TRANSICION)
             )
         },
+
         popEnterTransition = {
             slideIntoContainer(
                 AnimatedContentTransitionScope.SlideDirection.Right,
                 animationSpec = tween(DURACION_TRANSICION)
             )
         },
+
         popExitTransition = {
             slideOutOfContainer(
                 AnimatedContentTransitionScope.SlideDirection.Right,
@@ -89,6 +120,16 @@ fun AppNavigation(navController: NavHostController) {
         // RECUPERAR CONTRASEÑA
         composable("recuperar") {
             RecuperarScreen(navController)
+        }
+
+        // INICIO
+        composable("inicio") {
+            InicioScreen(navController)
+        }
+
+        // PERFIL
+        composable("perfil") {
+            PerfilScreen(navController)
         }
 
         // PREDIOS
@@ -121,24 +162,41 @@ fun AppNavigation(navController: NavHostController) {
             )
         ) { backStackEntry ->
 
-            val predioId = backStackEntry.arguments?.getInt("predioId") ?: 0
+            val predioId =
+                backStackEntry.arguments?.getInt("predioId") ?: 0
 
             val sectoresViewModel: SectoresViewModel = viewModel()
 
             SectoresScreen(
                 predioId = predioId,
                 viewModel = sectoresViewModel,
+
                 onCrearSector = {
                     navController.navigate("crear_sector/$predioId")
                 },
+
                 onVerAnalisis = { sectorId ->
                     navController.navigate("analisis/$sectorId")
                 },
+
+                onVerPlanes = { sectorId ->
+                    navController.navigate("mis_planes/$sectorId")
+                },
+
                 onCrearPlan = { sector ->
-                    // El plan parte con el cultivo y las hectáreas del sector
-                    planViewModel.usarSector(sector.cultivoId, sector.hectareas)
+
+                    // Guardar el sector seleccionado.
+                    sectorPlanId = sector.id
+
+                    // Mantener los datos originales del asistente.
+                    planViewModel.usarSector(
+                        sector.cultivoId,
+                        sector.hectareas
+                    )
+
                     navController.navigate("plan/cultivo")
                 },
+
                 onVolver = {
                     navController.popBackStack()
                 },
@@ -148,6 +206,36 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
+
+        // MIS PLANES DEL SECTOR
+        composable(
+            route = "mis_planes/{sectorId}",
+            arguments = listOf(
+                navArgument("sectorId") {
+                    type = NavType.IntType
+                }
+            )
+        ) { backStackEntry ->
+
+            val sectorId = backStackEntry.arguments?.getInt("sectorId") ?: 0
+
+            val planesViewModel: PlanesViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : androidx.lifecycle.ViewModel> create(
+                        modelClass: Class<T>
+                    ): T {
+                        return PlanesViewModel(planRepository) as T
+                    }
+                }
+            )
+
+            MisPlanesScreen(
+                sectorId = sectorId,
+                viewModel = planesViewModel,
+                onVolver = { navController.popBackStack() }
+            )
+        }
         // CREAR SECTOR
         composable(
             route = "crear_sector/{predioId}",
@@ -158,18 +246,22 @@ fun AppNavigation(navController: NavHostController) {
             )
         ) { backStackEntry ->
 
-            val predioId = backStackEntry.arguments?.getInt("predioId") ?: 0
+            val predioId =
+                backStackEntry.arguments?.getInt("predioId") ?: 0
 
             val sectoresViewModel: SectoresViewModel = viewModel()
 
             CrearSectorScreen(
                 predioId = predioId,
+
                 onGuardar = { sector ->
-                    // Guarda en Room y, si salió bien, vuelve a la lista de sectores
                     sectoresViewModel.guardarSector(sector) { ok ->
-                        if (ok) navController.popBackStack()
+                        if (ok) {
+                            navController.popBackStack()
+                        }
                     }
                 },
+
                 onVolver = {
                     navController.popBackStack()
                 }
@@ -221,16 +313,19 @@ fun AppNavigation(navController: NavHostController) {
             )
         ) { backStackEntry ->
 
-            val sectorId = backStackEntry.arguments?.getInt("sectorId") ?: 0
+            val sectorId =
+                backStackEntry.arguments?.getInt("sectorId") ?: 0
 
             val analisisViewModel: AnalisisViewModel = viewModel()
 
             AnalisisScreen(
                 sectorId = sectorId,
                 viewModel = analisisViewModel,
+
                 onCrearAnalisis = {
                     navController.navigate("crear_analisis/$sectorId")
                 },
+
                 onVolver = {
                     navController.popBackStack()
                 }
@@ -247,28 +342,62 @@ fun AppNavigation(navController: NavHostController) {
             )
         ) { backStackEntry ->
 
-            val sectorId = backStackEntry.arguments?.getInt("sectorId") ?: 0
+            val sectorId =
+                backStackEntry.arguments?.getInt("sectorId") ?: 0
 
             val analisisViewModel: AnalisisViewModel = viewModel()
 
             CrearAnalisisScreen(
                 sectorId = sectorId,
+
                 onGuardar = { analisis ->
-                    // Guarda en Room y, si salió bien, vuelve a la lista de análisis
                     analisisViewModel.guardarAnalisis(analisis) { ok ->
-                        if (ok) navController.popBackStack()
+                        if (ok) {
+                            navController.popBackStack()
+                        }
                     }
                 },
+
                 onVolver = {
                     navController.popBackStack()
                 }
             )
         }
 
-        // Asistente del plan nutricional en 4 preguntas
-        composable("plan/cultivo") { PlanCultivoScreen(navController, planViewModel) }
-        composable("plan/fertilizantes") { PlanFertilizantesScreen(navController, planViewModel) }
-        composable("plan/resumen") { PlanResumenScreen(navController, planViewModel) }
-        composable("plan/semana") { PlanSemanaScreen(navController, planViewModel) }
+        // ASISTENTE DEL PLAN NUTRICIONAL
+        // Se conservan las cuatro pantallas originales.
+
+        composable("plan/cultivo") {
+            PlanCultivoScreen(navController, planViewModel)
+        }
+
+        composable("plan/fertilizantes") {
+            PlanFertilizantesScreen(navController, planViewModel)
+        }
+
+        composable("plan/resumen") {
+            PlanResumenScreen(navController, planViewModel)
+        }
+
+        composable("plan/semana") {
+            PlanSemanaScreen(
+                navController = navController,
+                planViewModel = planViewModel,
+                onGuardarPlan = { nombreTemporada, fechaInicio, fechaTermino ->
+
+                    require(sectorPlanId > 0) {
+                        "No se ha seleccionado un sector válido"
+                    }
+
+                    planRepository.guardarPlan(
+                        sectorId = sectorPlanId,
+                        nombreTemporada = nombreTemporada,
+                        fechaInicio = fechaInicio,
+                        fechaTermino = fechaTermino
+                    )
+                }
+            )
+        }
     }
 }
+

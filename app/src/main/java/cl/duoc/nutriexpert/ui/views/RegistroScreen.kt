@@ -1,61 +1,134 @@
 
 package cl.duoc.nutriexpert.ui.views
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import cl.duoc.nutriexpert.ui.components.AnimacionExito
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import cl.duoc.nutriexpert.ui.components.AnimacionExito
-import cl.duoc.nutriexpert.ui.components.BarraSuperior
-import cl.duoc.nutriexpert.ui.components.BotonPrincipal
+import cl.duoc.nutriexpert.R
 import cl.duoc.nutriexpert.ui.components.CampoFormulario
 import cl.duoc.nutriexpert.viewmodel.RegistroViewModel
-import kotlinx.coroutines.delay
 
+private val RegistroVerdeOscuro = Color(0xFF073D24)
+private val RegistroVerdeNatural = Color(0xFF17542F)
+private val RegistroVerdeClaro = Color(0xFF8BBE45)
+private val RegistroMarfil = Color(0xFFFFFBF4)
+
+@Composable
+private fun IconoCrearUsuario(
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier.size(24.dp)) {
+        val w = size.width
+        val h = size.height
+        val grosor = 2.dp.toPx()
+
+        // Cabeza del usuario
+        drawCircle(
+            color = Color.White,
+            radius = w * 0.14f,
+            center = androidx.compose.ui.geometry.Offset(
+                w * 0.35f,
+                h * 0.28f
+            ),
+            style = Stroke(width = grosor)
+        )
+
+        // Hombros del usuario
+        val hombros = Path().apply {
+            moveTo(w * 0.10f, h * 0.80f)
+            quadraticBezierTo(
+                w * 0.10f, h * 0.52f,
+                w * 0.35f, h * 0.52f
+            )
+            quadraticBezierTo(
+                w * 0.56f, h * 0.52f,
+                w * 0.59f, h * 0.72f
+            )
+        }
+
+        drawPath(
+            path = hombros,
+            color = Color.White,
+            style = Stroke(
+                width = grosor,
+                cap = StrokeCap.Round
+            )
+        )
+
+        // Símbolo +
+        drawLine(
+            color = Color.White,
+            start = androidx.compose.ui.geometry.Offset(
+                w * 0.76f, h * 0.26f
+            ),
+            end = androidx.compose.ui.geometry.Offset(
+                w * 0.76f, h * 0.66f
+            ),
+            strokeWidth = grosor,
+            cap = StrokeCap.Round
+        )
+
+        drawLine(
+            color = Color.White,
+            start = androidx.compose.ui.geometry.Offset(
+                w * 0.57f, h * 0.46f
+            ),
+            end = androidx.compose.ui.geometry.Offset(
+                w * 0.95f, h * 0.46f
+            ),
+            strokeWidth = grosor,
+            cap = StrokeCap.Round
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistroScreen(navController: NavHostController) {
 
-    // Obtiene el ViewModel y el estado del registro
     val registroViewModel: RegistroViewModel = viewModel()
     val estado = registroViewModel.estado
 
-    // Controla la ventana de privacidad
-    var mostrarPolitica by remember { mutableStateOf(false) }
+    var mostrarPolitica by remember {
+        mutableStateOf(false)
+    }
 
     // Cuenta creada: la sesión ya quedó iniciada, se muestra la animación y se entra a la app
     LaunchedEffect(estado.registroCorrecto) {
         if (estado.registroCorrecto) {
             delay(1500)
-            navController.navigate("predios") {
+            navController.navigate("inicio") {
                 // Saca Login y Registro de la pila: "atrás" ya no vuelve a ellos
                 popUpTo("login") { inclusive = true }
             }
@@ -71,10 +144,32 @@ fun RegistroScreen(navController: NavHostController) {
     }
 
     Scaffold(
+        containerColor = RegistroMarfil,
         topBar = {
-            BarraSuperior(
-                titulo = "Crear cuenta",
-                onVolver = { navController.popBackStack() }
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Crear cuenta",
+                        color = Color.White,
+                        fontWeight = FontWeight.Medium
+                    )
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            navController.popBackStack()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = RegistroVerdeNatural
+                )
             )
         }
     ) { innerPadding ->
@@ -83,124 +178,307 @@ fun RegistroScreen(navController: NavHostController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .background(RegistroMarfil)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Text(
-                text = "Regístrate en NutriExpert",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.primary
+            Spacer(Modifier.height(8.dp))
+
+            // LOGO OFICIAL
+            Image(
+                painter = painterResource(
+                    id = R.drawable.logo_nutriexpert
+                ),
+                contentDescription = "Logo oficial NutriExpert",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .width(112.dp)
+                    .height(68.dp)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(3.dp))
 
-            // Los errores de registro usan "" para "sin error"; el campo espera null
-            CampoFormulario(
-                valor = estado.nombre,
-                onValorChange = registroViewModel::onNombreChange,
-                etiqueta = "Nombre",
-                error = estado.errores.nombre.ifEmpty { null },
-                icono = Icons.Filled.Person
-            )
+            // SEPARADOR
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 105.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                HorizontalDivider(
+                    modifier = Modifier.weight(1f),
+                    color = RegistroVerdeNatural.copy(alpha = 0.45f)
+                )
 
-            CampoFormulario(
-                valor = estado.correo,
-                onValorChange = registroViewModel::onCorreoChange,
-                etiqueta = "Correo electrónico",
-                error = estado.errores.correo.ifEmpty { null },
-                icono = Icons.Filled.Email,
-                tipoTeclado = KeyboardType.Email
-            )
-
-            CampoFormulario(
-                valor = estado.contrasena,
-                onValorChange = registroViewModel::onContrasenaChange,
-                etiqueta = "Contraseña",
-                error = estado.errores.contrasena.ifEmpty { null },
-                icono = Icons.Filled.Lock,
-                esContrasena = true
-            )
-
-            // Ayuda visible antes de equivocarse
-            if (estado.errores.contrasena.isEmpty()) {
                 Text(
-                    text = "Mínimo 8 caracteres, con letras y números.",
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.secondary,
+                    text = "🌱",
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+
+                HorizontalDivider(
+                    modifier = Modifier.weight(1f),
+                    color = RegistroVerdeNatural.copy(alpha = 0.45f)
+                )
+            }
+
+            Spacer(Modifier.height(7.dp))
+
+            // TÍTULO
+            Text(
+                text = "Crea tu cuenta",
+                fontSize = 26.sp,
+                fontWeight = FontWeight.ExtraBold,
+                textAlign = TextAlign.Center,
+                style = TextStyle(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            RegistroVerdeOscuro,
+                            RegistroVerdeNatural,
+                            RegistroVerdeClaro
+                        )
+                    )
+                )
+            )
+
+            Spacer(Modifier.height(3.dp))
+
+            Text(
+                text = "Comienza a gestionar tus predios y cultivos.",
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
+                color = Color(0xFF62645F),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+
+            Spacer(Modifier.height(14.dp))
+
+            // FORMULARIO
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(7.dp)
+            ) {
+
+                CampoFormulario(
+                    valor = estado.nombre,
+                    onValorChange = registroViewModel::onNombreChange,
+                    etiqueta = "Nombre",
+                    error = estado.errores.nombre.ifEmpty { null },
+                    icono = Icons.Filled.Person
+                )
+
+                CampoFormulario(
+                    valor = estado.correo,
+                    onValorChange = registroViewModel::onCorreoChange,
+                    etiqueta = "Correo electrónico",
+                    error = estado.errores.correo.ifEmpty { null },
+                    icono = Icons.Filled.Email,
+                    tipoTeclado = KeyboardType.Email
+                )
+
+                CampoFormulario(
+                    valor = estado.contrasena,
+                    onValorChange = registroViewModel::onContrasenaChange,
+                    etiqueta = "Contraseña",
+                    error = estado.errores.contrasena.ifEmpty { null },
+                    icono = Icons.Filled.Lock,
+                    esContrasena = true
+                )
+
+                CampoFormulario(
+                    valor = estado.confirmarContrasena,
+                    onValorChange = registroViewModel::onConfirmarContrasenaChange,
+                    etiqueta = "Confirmar contraseña",
+                    error = estado.errores.confirmarContrasena.ifEmpty { null },
+                    icono = Icons.Filled.Lock,
+                    esContrasena = true
+                )
+
+                // POLÍTICA DE PRIVACIDAD
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = estado.aceptaPrivacidad,
+                        onCheckedChange =
+                            registroViewModel::onAceptaPrivacidadChange,
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = RegistroVerdeNatural,
+                            uncheckedColor = RegistroVerdeNatural
+                        )
+                    )
+
+                    Text(
+                        text = "Acepto la política de privacidad",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = RegistroVerdeOscuro,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                if (estado.errores.privacidad.isNotEmpty()) {
+                    Text(
+                        text = estado.errores.privacidad,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                TextButton(
+                    onClick = {
+                        mostrarPolitica = true
+                    },
+                    modifier = Modifier
+                        .align(Alignment.Start)
+                        .height(38.dp),
+                    contentPadding = PaddingValues(
+                        horizontal = 8.dp,
+                        vertical = 0.dp
+                    )
+                ) {
+                    Text(
+                        text = "Leer política de privacidad",
+                        color = RegistroVerdeNatural,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 13.sp,
+                        textDecoration = TextDecoration.Underline
+                    )
+                }
+
+                if (estado.mensajeError.isNotEmpty()) {
+                    Text(
+                        text = estado.mensajeError,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                Spacer(Modifier.height(3.dp))
+
+                // BOTÓN CON ÍCONO DE USUARIO +
+                Button(
+                    onClick = {
+                        registroViewModel.registrar()
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 16.dp)
-                )
+                        .height(52.dp),
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = RegistroVerdeNatural
+                    ),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(
+                                        RegistroVerdeClaro,
+                                        RegistroVerdeNatural,
+                                        RegistroVerdeOscuro
+                                    )
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "Crear cuenta",
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+
+                            Spacer(Modifier.width(10.dp))
+
+                            IconoCrearUsuario()
+                        }
+                    }
+                }
             }
 
-            CampoFormulario(
-                valor = estado.confirmarContrasena,
-                onValorChange = registroViewModel::onConfirmarContrasenaChange,
-                etiqueta = "Confirmar contraseña",
-                error = estado.errores.confirmarContrasena.ifEmpty { null },
-                icono = Icons.Filled.Lock,
-                esContrasena = true
-            )
+            Spacer(Modifier.height(12.dp))
 
-            // Aceptación de la política de privacidad
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+            // ONDAS DECORATIVAS
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(45.dp)
             ) {
-                Checkbox(
-                    checked = estado.aceptaPrivacidad,
-                    onCheckedChange = registroViewModel::onAceptaPrivacidadChange
+                val w = size.width
+                val h = size.height
+
+                val ondaFondo = Path().apply {
+                    moveTo(0f, h * 0.35f)
+
+                    quadraticBezierTo(
+                        w * 0.25f, h * 0.05f,
+                        w * 0.52f, h * 0.65f
+                    )
+
+                    quadraticBezierTo(
+                        w * 0.78f, h,
+                        w, h * 0.22f
+                    )
+
+                    lineTo(w, h)
+                    lineTo(0f, h)
+                    close()
+                }
+
+                drawPath(
+                    path = ondaFondo,
+                    color = Color(0xFFE3EDCE)
                 )
-                Text(
-                    text = "Acepto la política de privacidad",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.weight(1f)
+
+                val ondaFrontal = Path().apply {
+                    moveTo(0f, h * 0.68f)
+
+                    quadraticBezierTo(
+                        w * 0.22f, h * 0.40f,
+                        w * 0.48f, h * 0.88f
+                    )
+
+                    quadraticBezierTo(
+                        w * 0.76f, h * 1.12f,
+                        w, h * 0.50f
+                    )
+
+                    lineTo(w, h)
+                    lineTo(0f, h)
+                    close()
+                }
+
+                drawPath(
+                    path = ondaFrontal,
+                    color = Color(0xFFB9D39A)
                 )
             }
-
-            // Error de aceptación de privacidad
-            if (estado.errores.privacidad.isNotEmpty()) {
-                Text(
-                    text = estado.errores.privacidad,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            // Enlace para leer la política de privacidad
-            TextButton(
-                onClick = { mostrarPolitica = true },
-                modifier = Modifier.align(Alignment.Start)
-            ) {
-                Text("Leer política de privacidad")
-            }
-
-            // Mensaje general, si se utiliza
-            if (estado.mensajeError.isNotEmpty()) {
-                Text(
-                    text = estado.mensajeError,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            BotonPrincipal(
-                texto = if (estado.cargando) "Creando cuenta…" else "Crear cuenta",
-                onClick = { registroViewModel.registrar() },
-                cargando = estado.cargando
-            )
         }
     }
 
-    // Ventana emergente con la política de privacidad
+    // POLÍTICA DE PRIVACIDAD ORIGINAL
     if (mostrarPolitica) {
         AlertDialog(
-            onDismissRequest = { mostrarPolitica = false },
-            title = { Text("Política de privacidad") },
+            onDismissRequest = {
+                mostrarPolitica = false
+            },
+            title = {
+                Text("Política de privacidad")
+            },
             text = {
                 Column(
                     modifier = Modifier
@@ -215,33 +493,37 @@ fun RegistroScreen(navController: NavHostController) {
 
                             1. INFORMACIÓN SOLICITADA
 
-                            Para crear una cuenta se solicita nombre, correo electrónico y contraseña.
+                            Para crear una cuenta se solicitará nombre, correo electrónico y contraseña.
 
-                            La aplicación también gestiona información de predios, cultivos y actividades agrícolas.
+                            La aplicación también podrá gestionar información de predios, cultivos y actividades agrícolas.
 
                             2. USO DE LA INFORMACIÓN
 
-                            Los datos se utilizan para identificar al usuario y organizar la información registrada en la aplicación.
+                            Los datos se utilizarán para identificar al usuario y organizar la información registrada en la aplicación.
 
                             3. PROTECCIÓN DE DATOS
 
-                            La contraseña nunca se guarda: solo se almacena una huella cifrada (hash) que no permite recuperarla. Cada usuario ve únicamente sus propios predios. Los datos se guardan solo en este teléfono y no se incluyen en las copias de seguridad.
+                            El proyecto contempla implementar autenticación y separación de los datos entre usuarios. Estas funciones aún están en desarrollo.
 
                             4. FUNCIONAMIENTO SIN CONEXIÓN
 
-                            La cuenta y los datos se guardan en el teléfono, por lo que la aplicación funciona sin internet.
+                            Se contempla que los usuarios previamente autenticados puedan utilizar determinadas funciones sin internet mediante almacenamiento local.
 
                             5. ALCANCE
 
-                            Esta política es ficticia y se utiliza únicamente para demostrar el prototipo académico. No es una política definitiva.
+                            Esta política es ficticia y se utiliza únicamente para demostrar el prototipo académico. No es una política definitiva ni confirma que todas las funciones estén implementadas.
 
-                            Última actualización: noviembre de 2026.
+                            Última actualización: octubre de 2026.
                         """.trimIndent()
                     )
                 }
             },
             confirmButton = {
-                TextButton(onClick = { mostrarPolitica = false }) {
+                TextButton(
+                    onClick = {
+                        mostrarPolitica = false
+                    }
+                ) {
                     Text("Cerrar")
                 }
             }

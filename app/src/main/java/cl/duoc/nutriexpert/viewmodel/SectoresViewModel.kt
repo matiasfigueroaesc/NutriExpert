@@ -106,6 +106,39 @@ class SectoresViewModel @JvmOverloads constructor(
         }
     }
 
+    fun actualizarHectareas(
+        sectorId: Int,
+        hectareas: Double,
+        onResultado: (Boolean) -> Unit
+    ) {
+        if (!hectareas.isFinite() || hectareas <= 0.0) {
+            _error.value = "La superficie debe ser mayor que cero"
+            onResultado(false)
+            return
+        }
+
+        val repo = repository
+        if (repo == null) {
+            _error.value = "El repositorio no está conectado"
+            onResultado(false)
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val filas = repo.actualizarHectareas(sectorId, hectareas)
+                _error.value = if (filas == 0) "Sector no encontrado" else null
+                if (filas > 0) pedirSincronizacion()
+                onResultado(filas > 0)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _error.value = e.message ?: "Error al actualizar superficie"
+                onResultado(false)
+            }
+        }
+    }
+
     fun eliminarSector(
         sector: SectorEntity,
         onResultado: (Boolean) -> Unit

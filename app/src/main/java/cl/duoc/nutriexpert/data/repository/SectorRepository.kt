@@ -18,6 +18,9 @@ class SectorRepository(
     private val api: SectorApiService
 ) {
 
+    suspend fun actualizarHectareas(sectorId: Int, hectareas: Double): Int =
+        dao.actualizarHectareas(sectorId, hectareas)
+
     fun obtenerPorPredio(predioId: Int): Flow<List<SectorEntity>> =
         dao.obtenerPorPredio(predioId)
 
