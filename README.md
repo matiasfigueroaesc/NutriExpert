@@ -184,7 +184,7 @@ Los tres microservicios corren en una instancia EC2 de AWS Academy, con MariaDB 
 |---|---|---|
 | `usuarios` | 8080 | MariaDB `nutriexpert_usuarios` |
 | `predios` | 8081 | MariaDB `nutriexpert_predios` |
-| `planes` | 8082 | H2 en memoria (pendiente: perfil `prod` para MariaDB) |
+| `planes` | 8082 | MariaDB `nutriexpert_planes` |
 
 #### Cómo se levantó (una sola vez)
 

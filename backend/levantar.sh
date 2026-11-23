@@ -4,7 +4,7 @@
 #
 #   usuarios -> puerto 8080 (MariaDB: nutriexpert_usuarios)
 #   predios  -> puerto 8081 (MariaDB: nutriexpert_predios)
-#   planes   -> puerto 8082 (por ahora H2 en memoria: aún no tiene perfil prod)
+#   planes   -> puerto 8082 (MariaDB: nutriexpert_planes)
 #
 # Se usa en la EC2. Instalación (una vez): cp ~/NutriExpert/backend/levantar.sh ~/ && chmod +x ~/levantar.sh
 # Uso:  ~/levantar.sh            (git pull + compilar + levantar)
@@ -66,7 +66,7 @@ levantar() {   # $1 servicio  $2 puerto  $3 perfil  $4 base de datos
 # De a uno, para no llenar la memoria arrancando los tres a la vez
 levantar usuarios 8080 prod nutriexpert_usuarios
 levantar predios  8081 prod nutriexpert_predios
-levantar planes   8082 dev  -
+levantar planes   8082 prod nutriexpert_planes
 
 echo
 echo "Listo. Prueba desde tu PC:  http://<ELASTIC_IP>:8080/api/usuarios/1"
