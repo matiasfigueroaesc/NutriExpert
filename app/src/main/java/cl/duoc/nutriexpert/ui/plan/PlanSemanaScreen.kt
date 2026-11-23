@@ -117,10 +117,6 @@ fun PlanSemanaScreen(
                 if (!guardando) {
                     if (nombreTemporada.isBlank()) {
                         errorGuardado = "Ingresa un nombre para la temporada"
-                    } else if (fechaInicio == null || fechaTermino == null) {
-                        errorGuardado = "Selecciona las fechas de inicio y término"
-                    } else if (fechaTermino!!.isBefore(fechaInicio)) {
-                        errorGuardado = "La fecha de término debe ser posterior al inicio"
                     } else {
                         guardando = true
                         errorGuardado = null
@@ -183,29 +179,6 @@ fun PlanSemanaScreen(
                 )
             }
 
-            Text(
-                text = "Fechas de la temporada",
-                fontWeight = FontWeight.Bold
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(
-                    onClick = { abrirCalendario(true) },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(fechaInicio?.toString() ?: "Fecha inicio")
-                }
-
-                Button(
-                    onClick = { abrirCalendario(false) },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(fechaTermino?.toString() ?: "Fecha término")
-                }
-            }
 
             Text(
                 text = "Etapa",
