@@ -93,7 +93,29 @@ Ejemplo de sector (JSON):
 ```
 
 <!-- Estefanía: endpoints de /api/planes y API externa Open-Meteo -->
-<!-- Fabián: endpoints del microservicio usuarios (:8080) -->
+### `usuarios` (puerto 8080) — carpeta `backend/usuarios`
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/api/usuarios/registro` | Crea una cuenta (`201`). `400` si faltan datos o el correo ya existe |
+| POST | `/api/usuarios/login` | Inicia sesión (`200`). `401` si el correo o la contraseña son incorrectos |
+| GET | `/api/usuarios/{id}` | Obtiene un usuario |
+| PUT | `/api/usuarios/{id}` | Cambia el nombre del usuario |
+| DELETE | `/api/usuarios/{id}` | Borra la cuenta |
+
+Ejemplo de registro (JSON):
+
+```json
+{ "nombre": "Fabián", "email": "fabian@nutriexpert.cl", "password": "agricola26" }
+```
+
+Respuesta (la contraseña **nunca** se devuelve):
+
+```json
+{ "id": 1, "nombre": "Fabián", "email": "fabian@nutriexpert.cl" }
+```
+
+La contraseña se guarda encriptada con **BCrypt** (`spring-security-crypto`, sin activar Spring Security completo). Debe tener 8 caracteres o más, con letras y números, igual que en la app. El correo se guarda en minúsculas.
 
 ## Cómo ejecutar el backend
 
@@ -106,7 +128,7 @@ cd backend/predios
 ./mvnw spring-boot:run        # en Windows: mvnw.cmd spring-boot:run
 ```
 
-Queda en `http://localhost:8081`. La consola de H2 está en `http://localhost:8081/h2-console` (JDBC URL `jdbc:h2:mem:predios`, usuario `sa`, sin clave).
+Queda en `http://localhost:8081`. El microservicio de usuarios se corre igual desde `backend/usuarios` y queda en `http://localhost:8080`. La consola de H2 está en `http://localhost:8081/h2-console` (JDBC URL `jdbc:h2:mem:predios`, usuario `sa`, sin clave).
 
 **Tests del backend:** `./mvnw test`
 
