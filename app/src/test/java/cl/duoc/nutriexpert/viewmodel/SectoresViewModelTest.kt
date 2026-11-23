@@ -119,4 +119,52 @@ class SectoresViewModelTest {
         assertEquals(sector, crearViewModel().obtenerSector(5))
         assertTrue(sincronizacionesPedidas == 0)
     }
+
+    @Test
+    fun actualizarHectareas_valorValido_actualizaYPideSincronizar() {
+        coEvery { repository.actualizarHectareas(5, 2.5) } returns 1
+        var resultado: Boolean? = null
+
+        crearViewModel().actualizarHectareas(5, 2.5) { resultado = it }
+
+        assertEquals(true, resultado)
+        assertEquals(1, sincronizacionesPedidas)
+    }
+
+    @Test
+    fun actualizarHectareas_enCero_muestraErrorSinTocarRoom() {
+        val viewModel = crearViewModel()
+        var resultado: Boolean? = null
+
+        viewModel.actualizarHectareas(5, 0.0) { resultado = it }
+
+        assertEquals(false, resultado)
+        assertEquals("La superficie debe ser mayor que cero", viewModel.error.value)
+        coVerify(exactly = 0) { repository.actualizarHectareas(any(), any()) }
+    }
+
+    @Test
+    fun actualizarHectareas_sectorQueNoExiste_avisaQueNoSeEncontro() {
+        coEvery { repository.actualizarHectareas(99, 2.0) } returns 0
+        val viewModel = crearViewModel()
+        var resultado: Boolean? = null
+
+        viewModel.actualizarHectareas(99, 2.0) { resultado = it }
+
+        assertEquals(false, resultado)
+        assertEquals("Sector no encontrado", viewModel.error.value)
+        assertEquals(0, sincronizacionesPedidas)
+    }
+
+    @Test
+    fun actualizarHectareas_conError_muestraElMensaje() {
+        coEvery { repository.actualizarHectareas(any(), any()) } throws IllegalStateException("falló Room")
+        val viewModel = crearViewModel()
+        var resultado: Boolean? = null
+
+        viewModel.actualizarHectareas(5, 2.0) { resultado = it }
+
+        assertEquals(false, resultado)
+        assertEquals("falló Room", viewModel.error.value)
+    }
 }

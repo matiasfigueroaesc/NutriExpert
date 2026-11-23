@@ -25,13 +25,15 @@ data class LoginState(
     val ingresoCorrecto: Boolean = false
 )
 
-// Administra el estado y las acciones del inicio de sesión
-class LoginViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val authRepository = AuthRepository(
+// Administra el estado y las acciones del inicio de sesión.
+// El AuthRepository llega por el constructor para poder testearlo con MockK (igual que PrediosViewModel).
+class LoginViewModel @JvmOverloads constructor(
+    application: Application,
+    private val authRepository: AuthRepository = AuthRepository(
         AppDatabase.obtener(application).usuarioDao(),
         SesionManager(application)
     )
+) : AndroidViewModel(application) {
 
     var estado by mutableStateOf(LoginState())
         private set

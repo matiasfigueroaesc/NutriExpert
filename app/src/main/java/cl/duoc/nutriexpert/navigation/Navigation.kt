@@ -1,5 +1,7 @@
-
+﻿
 package cl.duoc.nutriexpert.navigation
+
+import cl.duoc.nutriexpert.viewmodel.crearDetalleJson
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -393,11 +395,13 @@ fun AppNavigation(navController: NavHostController) {
                         sectorId = sectorPlanId,
                         nombreTemporada = nombreTemporada,
                         fechaInicio = fechaInicio,
-                        fechaTermino = fechaTermino
+                        fechaTermino = fechaTermino,
+                        detalleJson = planViewModel.crearDetalleJson()
                     )
                 }
             )
         }
     }
 }
+
 
