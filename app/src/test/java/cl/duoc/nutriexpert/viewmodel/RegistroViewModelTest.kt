@@ -117,4 +117,19 @@ class RegistroViewModelTest {
         assertFalse(vm.estado.errores.hayErrores())
         assertEquals("", vm.estado.mensajeError)
     }
+
+    @Test
+    fun registrarSinRed_muestraMensajeGeneral_noEnElCorreo() {
+        coEvery { authRepository.registrar(any(), any(), any()) } returns
+            ResultadoAuth.Error(AuthRepository.SIN_RED_REGISTRO)
+        val vm = crearVm()
+
+        vm.llenar()
+        vm.registrar()
+
+        assertFalse(vm.estado.registroCorrecto)
+        assertEquals(AuthRepository.SIN_RED_REGISTRO, vm.estado.mensajeError)
+        assertEquals("", vm.estado.errores.correo)   // el campo correo queda sin error
+        assertFalse(vm.estado.cargando)
+    }
 }
