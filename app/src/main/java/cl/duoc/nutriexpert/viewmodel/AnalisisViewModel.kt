@@ -13,8 +13,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class AnalisisViewModel(
-    application: Application
+// El repositorio llega por el constructor para poder testearlo (igual que SectoresViewModel).
+class AnalisisViewModel @JvmOverloads constructor(
+    application: Application,
+    repositorioInicial: AnalisisRepository =
+        AnalisisRepository(AppDatabase.obtener(application).analisisDao())
 ) : AndroidViewModel(application) {
 
     private val _analisis =
@@ -33,9 +36,7 @@ class AnalisisViewModel(
 
     // Se conecta solo a Room al crearse (igual que PrediosViewModel)
     init {
-        configurarRepositorio(
-            AnalisisRepository(AppDatabase.obtener(application).analisisDao())
-        )
+        configurarRepositorio(repositorioInicial)
     }
 
     fun configurarRepositorio(repo: AnalisisRepository) {

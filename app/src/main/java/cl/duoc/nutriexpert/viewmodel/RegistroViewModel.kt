@@ -29,12 +29,14 @@ data class RegistroState(
 )
 
 // Administra los datos y las acciones del registro
-class RegistroViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val authRepository = AuthRepository(
+// El AuthRepository llega por el constructor para poder testearlo con MockK.
+class RegistroViewModel @JvmOverloads constructor(
+    application: Application,
+    private val authRepository: AuthRepository = AuthRepository(
         AppDatabase.obtener(application).usuarioDao(),
         SesionManager(application)
     )
+) : AndroidViewModel(application) {
 
     var estado by mutableStateOf(RegistroState())
         private set
