@@ -7,10 +7,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import cl.duoc.nutriexpert.data.local.AppDatabase
 import cl.duoc.nutriexpert.data.repository.AuthRepository
+import cl.duoc.nutriexpert.data.repository.Repositorios
 import cl.duoc.nutriexpert.data.repository.ResultadoAuth
-import cl.duoc.nutriexpert.seguridad.SesionManager
 import cl.duoc.nutriexpert.utils.ErroresLogin
 import cl.duoc.nutriexpert.utils.validarCamposLogin
 import kotlinx.coroutines.launch
@@ -29,10 +28,7 @@ data class LoginState(
 // El AuthRepository llega por el constructor para poder testearlo con MockK (igual que PrediosViewModel).
 class LoginViewModel @JvmOverloads constructor(
     application: Application,
-    private val authRepository: AuthRepository = AuthRepository(
-        AppDatabase.obtener(application).usuarioDao(),
-        SesionManager(application)
-    )
+    private val authRepository: AuthRepository = Repositorios.auth(application)
 ) : AndroidViewModel(application) {
 
     var estado by mutableStateOf(LoginState())

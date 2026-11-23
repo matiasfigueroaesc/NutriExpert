@@ -140,4 +140,49 @@ class LoginViewModelTest {
 
         assertFalse(vm.estado.ingresoCorrecto)
     }
+
+    // ---------- Microservicio usuarios: sin red y bloqueo ----------
+
+    @Test
+    fun ingresarSinRed_primerIngreso_muestraQueFaltaInternet() {
+        coEvery { authRepository.iniciarSesion(any(), any()) } returns
+            ResultadoAuth.Error(AuthRepository.SIN_RED_PRIMER_INGRESO)
+        val vm = crearVm()
+
+        vm.onCorreoChange("usuario@correo.cl")
+        vm.onContrasenaChange("Clave123")
+        vm.ingresar()
+
+        assertFalse(vm.estado.ingresoCorrecto)
+        assertEquals(AuthRepository.SIN_RED_PRIMER_INGRESO, vm.estado.mensajeError)
+        assertFalse(vm.estado.cargando)
+    }
+
+    @Test
+    fun ingresarSinRed_conCuentaGuardada_entraIgual() {
+        // Sin red el repositorio usa la copia local: para el ViewModel es un Exito normal
+        coEvery { authRepository.iniciarSesion("usuario@correo.cl", "Clave123") } returns
+            ResultadoAuth.Exito(UsuarioEntity(id = 42, nombre = "Ana", correo = "usuario@correo.cl", hashContrasena = "x"))
+        val vm = crearVm()
+
+        vm.onCorreoChange("usuario@correo.cl")
+        vm.onContrasenaChange("Clave123")
+        vm.ingresar()
+
+        assertTrue(vm.estado.ingresoCorrecto)
+    }
+
+    @Test
+    fun ingresarBloqueado_muestraCuantoEsperar() {
+        coEvery { authRepository.iniciarSesion(any(), any()) } returns
+            ResultadoAuth.Error("Demasiados intentos fallidos. Espera 30 segundos e inténtalo de nuevo.")
+        val vm = crearVm()
+
+        vm.onCorreoChange("usuario@correo.cl")
+        vm.onContrasenaChange("Clave123")
+        vm.ingresar()
+
+        assertTrue(vm.estado.mensajeError.contains("30 segundos"))
+        assertFalse(vm.estado.ingresoCorrecto)
+    }
 }

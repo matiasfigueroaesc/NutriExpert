@@ -7,10 +7,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import cl.duoc.nutriexpert.data.local.AppDatabase
 import cl.duoc.nutriexpert.data.repository.AuthRepository
+import cl.duoc.nutriexpert.data.repository.Repositorios
 import cl.duoc.nutriexpert.data.repository.ResultadoAuth
-import cl.duoc.nutriexpert.seguridad.SesionManager
 import cl.duoc.nutriexpert.utils.ErroresRegistro
 import cl.duoc.nutriexpert.utils.validarCamposRegistro
 import kotlinx.coroutines.launch
@@ -32,10 +31,7 @@ data class RegistroState(
 // El AuthRepository llega por el constructor para poder testearlo con MockK.
 class RegistroViewModel @JvmOverloads constructor(
     application: Application,
-    private val authRepository: AuthRepository = AuthRepository(
-        AppDatabase.obtener(application).usuarioDao(),
-        SesionManager(application)
-    )
+    private val authRepository: AuthRepository = Repositorios.auth(application)
 ) : AndroidViewModel(application) {
 
     var estado by mutableStateOf(RegistroState())
@@ -116,11 +112,19 @@ class RegistroViewModel @JvmOverloads constructor(
                     cargando = false,
                     registroCorrecto = true
                 )
-                // El correo ya existe: el error se muestra en el campo correo
-                is ResultadoAuth.Error -> estado.copy(
-                    errores = estado.errores.copy(correo = resultado.mensaje),
-                    cargando = false
-                )
+                // Si el error es del correo (ya existe, no es válido) se muestra en ese campo;
+                // los demás (sin internet, servidor caído) van como mensaje general
+                is ResultadoAuth.Error ->
+                    if (resultado.mensaje.contains("correo", ignoreCase = true) ||
+                        resultado.mensaje.contains("email", ignoreCase = true)
+                    ) {
+                        estado.copy(
+                            errores = estado.errores.copy(correo = resultado.mensaje),
+                            cargando = false
+                        )
+                    } else {
+                        estado.copy(mensajeError = resultado.mensaje, cargando = false)
+                    }
             }
         }
     }
