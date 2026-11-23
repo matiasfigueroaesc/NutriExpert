@@ -143,7 +143,68 @@ DB_HOST=localhost DB_NAME=nutriexpert DB_USER=nutriexpert DB_PASSWORD=<clave> \
 
 En el Security Group de la EC2 hay que abrir los puertos 8080 y 8081.
 
-<!-- Fabián: pasos de la EC2, MariaDB, Elastic IP y levantar.sh -->
+### Despliegue en AWS (EC2)
+
+Los tres microservicios corren en una instancia EC2 de AWS Academy, con MariaDB en la misma máquina.
+
+| Dato | Valor |
+|---|---|
+| Elastic IP | `3.226.195.117` (fija: es la que usa `ApiConfig.kt`) |
+| Instancia | `nutriexpert-backend` · t2.micro · Amazon Linux 2023 · región us-east-1 |
+| Security Group | `nutriexpert-sg`: 22 (SSH, solo la IP del administrador), 8080, 8081 y 8082 abiertos |
+| Base de datos | MariaDB 10.5, solo accesible desde la misma EC2 (el puerto 3306 no está abierto) |
+
+| Servicio | Puerto | Datos |
+|---|---|---|
+| `usuarios` | 8080 | MariaDB `nutriexpert_usuarios` |
+| `predios` | 8081 | MariaDB `nutriexpert_predios` |
+| `planes` | 8082 | H2 en memoria (pendiente: perfil `prod` para MariaDB) |
+
+#### Cómo se levantó (una sola vez)
+
+1. **Instancia:** EC2 t2.micro con Amazon Linux 2023 y llave `vockey`, Security Group `nutriexpert-sg` y una **Elastic IP** asociada (sin ella la IP cambia cada vez que se apaga el laboratorio).
+2. **Swap de 2 GB**, porque la t2.micro tiene solo 1 GB de RAM:
+   ```bash
+   sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
+   sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+   echo '/swapfile swap swap defaults 0 0' | sudo tee -a /etc/fstab
+   ```
+3. **Java 17, Git y MariaDB:**
+   ```bash
+   sudo dnf install -y java-17-amazon-corretto-headless git mariadb105-server
+   sudo systemctl enable --now mariadb
+   ```
+4. **Bases y usuario** (en `sudo mysql`). La clave real **no** está en el repositorio:
+   ```sql
+   CREATE DATABASE nutriexpert_usuarios;
+   CREATE DATABASE nutriexpert_predios;
+   CREATE DATABASE nutriexpert_planes;
+   CREATE USER 'nutriexpert'@'localhost' IDENTIFIED BY '<clave>';
+   GRANT ALL PRIVILEGES ON nutriexpert_usuarios.* TO 'nutriexpert'@'localhost';
+   GRANT ALL PRIVILEGES ON nutriexpert_predios.* TO 'nutriexpert'@'localhost';
+   GRANT ALL PRIVILEGES ON nutriexpert_planes.* TO 'nutriexpert'@'localhost';
+   FLUSH PRIVILEGES;
+   ```
+5. **Código y clave:** se clona el repo en `~/NutriExpert` (rama `develop`) y la clave se guarda **fuera del repo**, en `~/nutriexpert.env` con permisos `600`:
+   ```
+   DB_HOST=localhost
+   DB_USER=nutriexpert
+   DB_PASSWORD=<clave>
+   ```
+6. **Script:** `cp ~/NutriExpert/backend/levantar.sh ~/ && chmod +x ~/levantar.sh`
+
+#### Cómo se actualiza el backend
+
+Después de unir cambios a `develop`, por SSH:
+
+```bash
+ssh -i labsuser.pem ec2-user@3.226.195.117
+~/levantar.sh
+```
+
+[`backend/levantar.sh`](backend/levantar.sh) detiene los servicios, hace `git pull`, compila con Maven y los vuelve a levantar de a uno (con poca memoria cada uno, para que quepan en la t2.micro). Los logs quedan en `~/logs/<servicio>.log`.
+
+**Al iniciar el laboratorio** los microservicios están apagados: hay que entrar por SSH y ejecutar `~/levantar.sh`. MariaDB arranca sola y los datos se conservan.
 
 **Dirección del backend en la app:** `app/src/main/java/cl/duoc/nutriexpert/data/remote/ApiConfig.kt`. Con `http://10.0.2.2` el emulador llega al PC; para la EC2 se cambia por la Elastic IP.
 
