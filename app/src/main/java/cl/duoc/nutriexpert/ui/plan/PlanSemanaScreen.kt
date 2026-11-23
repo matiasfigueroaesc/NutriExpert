@@ -1,4 +1,4 @@
-
+﻿
 package cl.duoc.nutriexpert.ui.plan
 
 import androidx.compose.foundation.horizontalScroll
@@ -181,6 +181,30 @@ fun PlanSemanaScreen(
                     color = MaterialTheme.colorScheme.error,
                     fontSize = 13.sp
                 )
+            }
+
+            Text(
+                text = "Fechas de la temporada",
+                fontWeight = FontWeight.Bold
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = { abrirCalendario(true) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(fechaInicio?.toString() ?: "Fecha inicio")
+                }
+
+                Button(
+                    onClick = { abrirCalendario(false) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(fechaTermino?.toString() ?: "Fecha término")
+                }
             }
 
             Text(
@@ -439,3 +463,4 @@ fun PlanSemanaScreen(
         }
     }
 }
+
