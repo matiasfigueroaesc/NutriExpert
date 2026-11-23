@@ -243,8 +243,9 @@ ssh -i labsuser.pem ec2-user@3.226.195.117
 
 ## APK firmado
 
-- Llave de firma: `app/nutriexpert.jks` (alias `nutriexpert`). La configuración está en `signingConfigs` de `app/build.gradle.kts`.
-- Para generar el APK: **Build → Generate Signed App Bundle or APK → APK**, elegir `app/nutriexpert.jks`, o desde la terminal `./gradlew assembleRelease`. El APK queda en `app/build/outputs/apk/release/app-release.apk`.
+- APK listo para instalar: `apk/NutriExpert.apk` (modo release, firmado).
+- Llave de firma: `app/nutriexpert-duoc.jks`, alias `nutriexpert-duoc`, clave `NutriExpertDuoc2026`. Certificado a nombre de NutriExpert, equipo Matías Figueroa, Estefanía Ruiz y Fabián, Duoc UC, Chile. La configuración está en `signingConfigs` de `app/build.gradle.kts`.
+- Para generar el APK de nuevo: **Build → Generate Signed App Bundle or APK → APK**, elegir `app/nutriexpert-duoc.jks`, o desde la terminal `./gradlew assembleRelease`. El APK queda en `app/build/outputs/apk/release/app-release.apk`.
 
 <!-- Captura de la generación del APK y del .jks -->
 
