@@ -1,11 +1,13 @@
 package cl.duoc.nutriexpert.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -13,6 +15,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,6 +43,20 @@ fun BotonPrincipal(
         modifier = modifier
             .fillMaxWidth()
             .height(ALTO_BOTON)
+            .background(
+                brush = Brush.horizontalGradient(
+                    listOf(
+                        Color(0xFF138A36),
+                        Color(0xFF08783B),
+                        Color(0xFF005C37)
+                    )
+                ),
+                shape = RoundedCornerShape(50)
+            ),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Transparent,
+            contentColor = Color.White
+        )
     ) {
         ContenidoBoton(texto, icono, cargando)
     }
