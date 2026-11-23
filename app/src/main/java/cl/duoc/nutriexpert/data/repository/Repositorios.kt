@@ -10,6 +10,14 @@ import cl.duoc.nutriexpert.seguridad.SesionManager
 // para que los ViewModels y el SyncWorker no tengan que saber cómo se arman.
 object Repositorios {
 
+    // Cuentas: microservicio usuarios + copia local en Room + sesión del teléfono
+    fun auth(context: Context): AuthRepository =
+        AuthRepository(
+            dao = AppDatabase.obtener(context).usuarioDao(),
+            sesion = SesionManager(context),
+            api = RetrofitClient.usuarioApi
+        )
+
     fun predios(context: Context): PredioRepository {
         val db = AppDatabase.obtener(context)
         return PredioRepository(

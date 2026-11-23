@@ -6,13 +6,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import cl.duoc.nutriexpert.data.local.AppDatabase
 import cl.duoc.nutriexpert.data.local.PredioEntity
 import cl.duoc.nutriexpert.data.repository.AuthRepository
 import cl.duoc.nutriexpert.data.repository.PredioRepository
 import cl.duoc.nutriexpert.data.repository.Repositorios
 import cl.duoc.nutriexpert.nativo.FotoHelper
-import cl.duoc.nutriexpert.seguridad.SesionManager
 import cl.duoc.nutriexpert.sync.Sincronizacion
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,10 +26,7 @@ import kotlinx.coroutines.launch
 class PrediosViewModel @JvmOverloads constructor(
     application: Application,
     private val repository: PredioRepository = Repositorios.predios(application),
-    private val authRepository: AuthRepository = AuthRepository(
-        AppDatabase.obtener(application).usuarioDao(),
-        SesionManager(application)
-    ),
+    private val authRepository: AuthRepository = Repositorios.auth(application),
     // "Control remoto" para pedir que se sincronice con el servidor apenas haya red
     private val pedirSincronizacion: () -> Unit = { Sincronizacion.pedir(application) }
 ) : AndroidViewModel(application) {
