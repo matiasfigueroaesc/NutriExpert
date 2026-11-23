@@ -1,31 +1,77 @@
+
 package cl.duoc.nutriexpert.data.local
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
-// Base de datos local de la app. Aquí se registran todas las tablas (entities).
-@Database(entities = [PredioEntity::class], version = 1, exportSchema = false)
+// Base de datos local de NutriExpert.
+// Al agregar una tabla nueva, se incrementa la version.
+
+@Database(
+    entities = [
+        PredioEntity::class,
+        CultivoEntity::class,
+        FertilizanteEntity::class,
+        EtapaEntity::class,
+        SectorEntity::class,
+        AnalisisEntity::class,
+        UsuarioEntity::class,
+        PlanEntity::class
+    ],
+    // 3: tabla usuarios y dueño (usuarioId) de cada predio
+    // 4: predios y sectores guardan remoteId, sincronizado y eliminado (sincronización con el backend)
+    // 5: tabla planes (con temporada, fechas y sincronización)
+    // 6: los planes guardan el detalle del plan (detalleJson)
+    version = 6,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun predioDao(): PredioDao
+    abstract fun cultivoDao(): CultivoDao
+    abstract fun fertilizanteDao(): FertilizanteDao
+    abstract fun etapaDao(): EtapaDao
+    abstract fun sectorDao(): SectorDao
+    abstract fun analisisDao(): AnalisisDao
+    abstract fun usuarioDao(): UsuarioDao
+    abstract fun planDao(): PlanDao
 
     companion object {
-        // Una sola instancia para toda la app
+
         @Volatile
         private var INSTANCIA: AppDatabase? = null
 
         fun obtener(context: Context): AppDatabase {
             return INSTANCIA ?: synchronized(this) {
-                val db = Room.databaseBuilder(
+                INSTANCIA ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "nutriexpert.db"
-                ).build()
-                INSTANCIA = db
-                db
+                )
+                    // 5 -> 6 sin perder datos; versiones más viejas se borran y se crean de nuevo
+                    .addMigrations(MIGRATION_5_6)
+                    // Mientras desarrollamos: si cambia la versión, se borra y se crea de nuevo
+                    .fallbackToDestructiveMigration(true)
+                    .build()
+                    .also { db ->
+                        INSTANCIA = db
+
+                        CoroutineScope(
+                            SupervisorJob() + Dispatchers.IO
+                        ).launch {
+                            CatalogoInicial.cargar(db)
+                        }
+                    }
             }
         }
     }
 }
+
+
+

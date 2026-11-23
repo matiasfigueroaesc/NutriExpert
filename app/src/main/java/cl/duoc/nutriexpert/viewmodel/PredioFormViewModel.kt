@@ -1,15 +1,16 @@
 package cl.duoc.nutriexpert.viewmodel
 
 import android.app.Application
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import cl.duoc.nutriexpert.data.local.AppDatabase
 import cl.duoc.nutriexpert.data.local.PredioEntity
 import cl.duoc.nutriexpert.data.repository.PredioRepository
+import cl.duoc.nutriexpert.data.repository.Repositorios
 import cl.duoc.nutriexpert.nativo.FotoHelper
+import cl.duoc.nutriexpert.sync.Sincronizacion
 import cl.duoc.nutriexpert.utils.ErroresPredio
 import cl.duoc.nutriexpert.utils.validarPredio
 import kotlinx.coroutines.launch
@@ -29,11 +30,14 @@ data class PredioFormState(
 
 // ViewModel del formulario "Nuevo predio" / "Editar predio".
 // La pantalla muestra "estado" y avisa cada cambio; la validación está en Validaciones.kt.
-class PredioFormViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repository = PredioRepository(
-        AppDatabase.obtener(application).predioDao()
-    )
+// El repositorio y el "control remoto" de sincronización llegan por el constructor
+// para poder testearlo (igual que PrediosViewModel).
+class PredioFormViewModel @JvmOverloads constructor(
+    application: Application,
+    // Trabaja solo con los predios del usuario que inició sesión
+    private val repository: PredioRepository = Repositorios.predios(application),
+    private val pedirSincronizacion: () -> Unit = { Sincronizacion.pedir(application) }
+) : AndroidViewModel(application) {
 
     var estado by mutableStateOf(PredioFormState())
         private set
@@ -113,6 +117,8 @@ class PredioFormViewModel(application: Application) : AndroidViewModel(applicati
             }
             fotoOriginal = estado.fotoUri
             estado = estado.copy(guardado = true)
+            // Ya quedó en el teléfono; ahora se manda al servidor apenas haya red
+            pedirSincronizacion()
         }
     }
 

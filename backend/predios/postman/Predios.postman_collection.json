@@ -1,0 +1,318 @@
+{
+  "info": {
+    "name": "NutriExpert - Predios y sectores",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081"
+    }
+  ],
+  "item": [
+    {
+      "name": "Predios",
+      "item": [
+        {
+          "name": "Crear predio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/predios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "predios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": 1,\n  \"nombre\": \"Los Aromos\",\n  \"comuna\": \"Quillota\",\n  \"latitud\": -32.88,\n  \"longitud\": -71.25,\n  \"superficieHa\": 10.0\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar predios de un usuario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/predios?usuarioId=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "predios"
+              ],
+              "query": [
+                {
+                  "key": "usuarioId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar predio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/predios/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "predios",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Actualizar predio",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/predios/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "predios",
+                "1"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": 1,\n  \"nombre\": \"Las Palmas\",\n  \"comuna\": \"Quillota\",\n  \"latitud\": -32.88,\n  \"longitud\": -71.25,\n  \"superficieHa\": 10.0\n}"
+            }
+          }
+        },
+        {
+          "name": "Crear predio sin nombre (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/predios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "predios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuarioId\": 1,\n  \"comuna\": \"Quillota\",\n  \"latitud\": -32.88,\n  \"longitud\": -71.25,\n  \"superficieHa\": 10.0\n}"
+            }
+          }
+        },
+        {
+          "name": "Buscar predio que no existe (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/predios/9999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "predios",
+                "9999"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Eliminar predio (y sus sectores)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/predios/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "predios",
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sectores",
+      "item": [
+        {
+          "name": "Crear sector",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sectores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sectores"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"predioId\": 1,\n  \"nombre\": \"Sector norte\",\n  \"cultivo\": \"cultivo-tomate\",\n  \"superficieHa\": 4.0\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar sectores de un predio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sectores?predioId=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sectores"
+              ],
+              "query": [
+                {
+                  "key": "predioId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar sector",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sectores/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sectores",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Actualizar sector",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sectores/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sectores",
+                "1"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"predioId\": 1,\n  \"nombre\": \"Sector sur\",\n  \"cultivo\": \"cultivo-tomate\",\n  \"superficieHa\": 4.0\n}"
+            }
+          }
+        },
+        {
+          "name": "Crear sector en predio que no existe (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sectores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sectores"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"predioId\": 9999,\n  \"nombre\": \"Sector norte\",\n  \"cultivo\": \"cultivo-tomate\",\n  \"superficieHa\": 4.0\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar sector",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sectores/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sectores",
+                "1"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -100,10 +100,10 @@ fun validarCamposRegistro(
 ): ErroresRegistro {
 
     return ErroresRegistro(
-        nombre = if (nombre.isBlank()) {
-            "Ingresa tu nombre"
-        } else {
-            ""
+        nombre = when {
+            nombre.isBlank() -> "Ingresa tu nombre"
+            nombre.trim().length < 2 -> "El nombre debe tener al menos 2 caracteres"
+            else -> ""
         },
 
         correo = when {
@@ -117,6 +117,8 @@ fun validarCamposRegistro(
             contrasena.isBlank() -> "Ingresa tu contraseña"
             contrasena.length < 8 ->
                 "La contraseña debe tener al menos 8 caracteres"
+            !contrasena.any { it.isLetter() } || !contrasena.any { it.isDigit() } ->
+                "La contraseña debe tener letras y números"
             else -> ""
         },
 
@@ -165,4 +167,131 @@ fun validarPredio(nombre: String, comuna: String, hectareas: String): ErroresPre
             else -> null
         }
     )
+}
+
+
+// VALIDACIONES DE SECTORES
+
+data class ErroresSector(
+    val nombre: String? = null,
+    val cultivo: String? = null,
+    val hectareas: String? = null
+) {
+    fun hayErrores(): Boolean =
+        nombre != null || cultivo != null || hectareas != null
+}
+
+fun validarSector(
+    nombre: String,
+    cultivoId: String,
+    hectareas: String
+): ErroresSector {
+
+    val superficie = hectareas.trim()
+        .replace(",", ".")
+        .toDoubleOrNull()
+
+    return ErroresSector(
+        nombre = when {
+            nombre.isBlank() -> "Ingresa el nombre del sector"
+            nombre.trim().length < 3 ->
+                "El nombre debe tener al menos 3 caracteres"
+            else -> null
+        },
+
+        cultivo = if (cultivoId.isBlank()) {
+            "Selecciona un cultivo"
+        } else {
+            null
+        },
+
+        hectareas = when {
+            hectareas.isBlank() -> "Ingresa la superficie"
+            superficie == null || !superficie.isFinite() ->
+                "Usa solo números, ej: 7,5"
+            superficie <= 0.0 ->
+                "La superficie debe ser mayor a 0"
+            else -> null
+        }
+    )
+}
+
+
+// VALIDACIONES DE ANÁLISIS DE SUELO Y AGUA
+
+data class ErroresAnalisis(
+    val fecha: String? = null,
+    val campos: Map<String, String> = emptyMap()
+) {
+    fun hayErrores(): Boolean =
+        fecha != null || campos.isNotEmpty()
+}
+
+fun validarAnalisis(
+    fecha: String,
+    valores: Map<String, String>
+): ErroresAnalisis {
+
+    val errores = mutableMapOf<String, String>()
+
+    val camposObligatorios = listOf(
+        "profundidadCm",
+        "densidadAparente",
+        "pedregosidadPct",
+        "sueloN",
+        "sueloP",
+        "sueloK",
+        "sueloCa",
+        "sueloMg",
+        "aguaN",
+        "aguaP",
+        "aguaK",
+        "aguaCa",
+        "aguaMg",
+        "aguaM3Ha"
+    )
+
+    for (campo in camposObligatorios) {
+        val texto = valores[campo].orEmpty().trim()
+        val numero = texto.replace(",", ".").toDoubleOrNull()
+
+        errores[campo] = when {
+            texto.isBlank() -> "Este campo es obligatorio"
+            numero == null || !numero.isFinite() ->
+                "Ingresa un número válido"
+            numero < 0.0 ->
+                "El valor no puede ser negativo"
+            campo == "profundidadCm" && numero == 0.0 ->
+                "La profundidad debe ser mayor a cero"
+            campo == "densidadAparente" && numero == 0.0 ->
+                "La densidad debe ser mayor a cero"
+            campo == "pedregosidadPct" && numero > 100.0 ->
+                "La pedregosidad no puede superar el 100%"
+            else -> continue
+        }
+    }
+
+    val fechaValida = esFechaValida(fecha.trim())
+
+    return ErroresAnalisis(
+        fecha = if (fechaValida) null
+        else "Ingresa una fecha válida (AAAA-MM-DD)",
+        campos = errores
+    )
+}
+
+
+// Comprueba una fecha AAAA-MM-DD que exista de verdad (rechaza 2026-02-30).
+// Se usa SimpleDateFormat estricto porque java.time recién existe desde Android 8
+// y la app funciona desde Android 7 (minSdk 24).
+fun esFechaValida(fecha: String): Boolean {
+    if (!Regex("""\d{4}-\d{2}-\d{2}""").matches(fecha)) return false
+    val formato = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).apply {
+        isLenient = false
+    }
+    return try {
+        formato.parse(fecha) != null
+    } catch (e: java.text.ParseException) {
+        false
+    }
 }

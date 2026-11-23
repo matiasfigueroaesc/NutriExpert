@@ -19,6 +19,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
 
@@ -26,6 +28,7 @@ import androidx.compose.ui.unit.dp
 // - si "error" no es null, el borde se pone rojo, aparece un ícono de alerta
 //   y el mensaje se muestra debajo con una animación.
 // Se puede usar en cualquier formulario (Login, Registro, Predio...).
+// Con esContrasena = true sirve también para contraseñas.
 @Composable
 fun CampoFormulario(
     valor: String,
@@ -34,6 +37,7 @@ fun CampoFormulario(
     error: String?,
     icono: ImageVector? = null,
     tipoTeclado: KeyboardType = KeyboardType.Text,
+    esContrasena: Boolean = false,      // oculta lo que se escribe con puntos
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -55,7 +59,11 @@ fun CampoFormulario(
                     )
                 }
             } else null,
-            keyboardOptions = KeyboardOptions(keyboardType = tipoTeclado),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = if (esContrasena) KeyboardType.Password else tipoTeclado
+            ),
+            visualTransformation = if (esContrasena) PasswordVisualTransformation()
+            else VisualTransformation.None,
             modifier = Modifier.fillMaxWidth()
         )
 

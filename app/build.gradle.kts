@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    jacoco
 }
 
 android {
@@ -20,14 +21,31 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Firma del APK de entrega. El archivo nutriexpert-duoc.jks está en la carpeta app/ del repo
+    // (lo pide la pauta). Es como la firma de un documento: Android solo instala un APK firmado,
+    // y con la misma llave se pueden firmar las versiones nuevas.
+    signingConfigs {
+        create("release") {
+            storeFile = file("nutriexpert-duoc.jks")
+            storePassword = "NutriExpertDuoc2026"
+            keyAlias = "nutriexpert-duoc"
+            keyPassword = "NutriExpertDuoc2026"
+        }
+    }
+
     buildTypes {
         release {
             optimization {
                 enable = false
             }
+            signingConfig = signingConfigs.getByName("release")
         }
     }
+    testCoverage {
+        jacocoVersion = "0.8.13"
+    }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -37,6 +55,7 @@ android {
 }
 
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
@@ -51,7 +70,17 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+    // Retrofit: para hablar con los microservicios por HTTP (JSON con Gson)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    // WorkManager: sincroniza en segundo plano cuando vuelve la red
+    implementation(libs.androidx.work.runtime.ktx)
     testImplementation(libs.junit)
+    // MockK finge el ApiService y el DAO en los tests; coroutines-test corre funciones suspend
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    // org.json real para los tests (en el teléfono ya viene incluido en Android)
+    testImplementation("org.json:json:20240303")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -59,3 +88,44 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
+
+
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("testDebugUnitTest")
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+
+    val exclusiones = listOf(
+        "**/R.class",
+        "**/R$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*",
+        "**/ComposableSingletons*",
+        "**/*_Impl.class",
+        "**/*_Impl$*.class"
+    )
+
+    classDirectories.setFrom(
+        fileTree(layout.buildDirectory.dir("intermediates/javac/debug/compileDebugJavaWithJavac/classes")) {
+            exclude(exclusiones)
+        },
+        fileTree(layout.buildDirectory.dir("intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes")) {
+            exclude(exclusiones)
+        }
+    )
+
+    sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
+
+    executionData.setFrom(
+        fileTree(layout.buildDirectory) {
+            include("jacoco/testDebugUnitTest.exec")
+        }
+    )
+}
+
+
+
