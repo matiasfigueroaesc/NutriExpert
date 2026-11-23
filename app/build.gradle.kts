@@ -79,6 +79,8 @@ dependencies {
     // MockK finge el ApiService y el DAO en los tests; coroutines-test corre funciones suspend
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
+    // org.json real para los tests (en el teléfono ya viene incluido en Android)
+    testImplementation("org.json:json:20240303")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
