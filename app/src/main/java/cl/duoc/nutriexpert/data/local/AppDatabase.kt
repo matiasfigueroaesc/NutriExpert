@@ -27,7 +27,8 @@ import kotlinx.coroutines.launch
     // 3: tabla usuarios y dueño (usuarioId) de cada predio
     // 4: predios y sectores guardan remoteId, sincronizado y eliminado (sincronización con el backend)
     // 5: tabla planes (con temporada, fechas y sincronización)
-    version = 5,
+    // 6: los planes guardan el detalle del plan (detalleJson)
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -53,6 +54,8 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "nutriexpert.db"
                 )
+                    // 5 -> 6 sin perder datos; versiones más viejas se borran y se crean de nuevo
+                    .addMigrations(MIGRATION_5_6)
                     // Mientras desarrollamos: si cambia la versión, se borra y se crea de nuevo
                     .fallbackToDestructiveMigration(true)
                     .build()
@@ -69,5 +72,6 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 }
+
 
 

@@ -1,4 +1,4 @@
-
+﻿
 package cl.duoc.nutriexpert.data.local
 
 import androidx.room.Entity
@@ -14,5 +14,7 @@ data class PlanEntity(
     val fechaTermino: String? = null,
     val remoteId: Long? = null,
     val sincronizado: Boolean = false,
-    val pendienteEliminar: Boolean = false
+    val pendienteEliminar: Boolean = false,
+    val detalleJson: String? = null
 )
+

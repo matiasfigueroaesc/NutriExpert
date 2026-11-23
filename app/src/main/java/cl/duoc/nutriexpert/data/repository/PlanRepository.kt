@@ -1,4 +1,4 @@
-package cl.duoc.nutriexpert.data.repository
+﻿package cl.duoc.nutriexpert.data.repository
 
 import cl.duoc.nutriexpert.data.local.PlanDao
 import cl.duoc.nutriexpert.data.local.PlanEntity
@@ -14,7 +14,7 @@ class PlanRepository(
     fun obtenerPlanes(sectorId: Int): Flow<List<PlanEntity>> =
         planDao.obtenerPorSector(sectorId)
 
-    suspend fun guardarPlan(sectorId: Int, nombreTemporada: String, fechaInicio: String, fechaTermino: String): Long {
+    suspend fun guardarPlan(sectorId: Int, nombreTemporada: String, fechaInicio: String, fechaTermino: String, detalleJson: String? = null): Long {
         require(nombreTemporada.isNotBlank())
 
         val idLocal = planDao.insertar(
@@ -23,7 +23,8 @@ class PlanRepository(
                 nombreTemporada = nombreTemporada.trim(),
                 fechaInicio = fechaInicio,
                 fechaTermino = fechaTermino,
-                sincronizado = false
+                sincronizado = false,
+                detalleJson = detalleJson
             )
         )
         sincronizarPendientes()
@@ -96,3 +97,5 @@ class PlanRepository(
         }
     }
 }
+
+
