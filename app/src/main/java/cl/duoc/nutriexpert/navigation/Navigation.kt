@@ -193,10 +193,18 @@ fun AppNavigation(navController: NavHostController) {
                     navController.navigate("plan/cultivo")
                 },
 
+
+
+
                 onVolver = {
-                    navController.popBackStack()
+                    if (!navController.popBackStack("predios", false)) {
+                        navController.navigate("predios") {
+                            launchSingleTop = true
+                        }
+                    }
                 }
             )
+
         }
 
 
