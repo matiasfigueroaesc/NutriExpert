@@ -235,7 +235,7 @@ private fun CabeceraInicio(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(195.dp)
+            .height(155.dp)
             .background(
                 Brush.verticalGradient(
                     listOf(
@@ -291,8 +291,8 @@ private fun CabeceraInicio(
                 .padding(
                     start = 20.dp,
                     end = 20.dp,
-                    top = 16.dp,
-                    bottom = 16.dp
+                    top = 12.dp,
+                    bottom = 12.dp
                 )
         ) {
             Row(
@@ -361,7 +361,7 @@ private fun CabeceraInicio(
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(10.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically
