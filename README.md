@@ -9,7 +9,7 @@ La app es **offline-first**: todo funciona sin internet y los datos se guardan e
 | Integrante         | Tercera entrega |
 |--------------------|---|
 | Matías Figueroa    | Microservicio `predios` (predios y sectores), CRUD de predios y sectores en la app, sincronización sin red (WorkManager), APK firmado |
-| Estefanía Ruiz     | Microservicio `predios` (planes), pantalla Mis planes, clima con Open-Meteo, colección de Postman |
+| Estefanía Ruiz     | Microservicio `planes`, pantalla Mis planes, clima con Open-Meteo, colección de Postman |
 | Fabián Rubio Parra | Microservicio `usuarios`, login, registro y perfil contra el backend, despliegue en AWS EC2 |
 
 ## Funcionalidades (etapa 1)
@@ -92,7 +92,33 @@ Ejemplo de sector (JSON):
 { "predioId": 1, "nombre": "Sector norte", "cultivo": "cultivo-tomate", "superficieHa": 4.0 }
 ```
 
-<!-- Estefanía: endpoints de /api/planes y API externa Open-Meteo -->
+### `planes` (puerto 8082) — carpeta `backend/planes`
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/planes?sectorId={id}` | Lista los planes de un sector |
+| GET | `/api/planes/{id}` | Busca un plan |
+| POST | `/api/planes` | Crea un plan (`201`) |
+| PUT | `/api/planes/{id}` | Actualiza un plan (`404` si no existe) |
+| DELETE | `/api/planes/{id}` | Borra un plan (`204`) |
+
+```json
+{ "sectorId": 1, "nombreTemporada": "Temporada 2026", "fechaInicio": "2026-09-01", "fechaTermino": "2027-03-31" }
+```
+
+### API externa: Open-Meteo (clima)
+
+La app consulta el clima de cada predio con Retrofit en `https://api.open-meteo.com/v1/forecast`, usando la latitud y longitud guardadas con el GPS. No necesita llave ni registro.
+
+| Parámetro | Valor que usa la app |
+|---|---|
+| `latitude`, `longitude` | Ubicación del predio |
+| `current` | `temperature_2m,weather_code` (temperatura y estado actual) |
+| `daily` | `temperature_2m_max,temperature_2m_min` (máxima y mínima, y pronóstico de varios días) |
+| `timezone` | `auto` |
+
+El código está en `data/remote/clima/` (`OpenMeteoApi`, `OpenMeteoClient`) y `data/repository/ClimaRepository.kt`.
+
 ### `usuarios` (puerto 8080) — carpeta `backend/usuarios`
 
 | Método | Ruta | Descripción |
@@ -247,7 +273,13 @@ ssh -i labsuser.pem ec2-user@3.226.195.117
 - Llave de firma: `app/nutriexpert-duoc.jks`, alias `nutriexpert-duoc`, clave `NutriExpertDuoc2026`. Certificado a nombre de NutriExpert, equipo Matías Figueroa, Estefanía Ruiz y Fabián, Duoc UC, Chile. La configuración está en `signingConfigs` de `app/build.gradle.kts`.
 - Para generar el APK de nuevo: **Build → Generate Signed App Bundle or APK → APK**, elegir `app/nutriexpert-duoc.jks`, o desde la terminal `./gradlew assembleRelease`. El APK queda en `app/build/outputs/apk/release/app-release.apk`.
 
-<!-- Captura de la generación del APK y del .jks -->
+**Firma con la llave del equipo** (Build → Generate Signed App Bundle or APK → APK):
+
+![Llave nutriexpert-duoc.jks en Android Studio](docs/capturas/apk-firmado-llave.png)
+
+**APK release generado y firmado:**
+
+![APK release generado](docs/capturas/apk-firmado-generado.png)
 
 ## Estructura del proyecto
 
